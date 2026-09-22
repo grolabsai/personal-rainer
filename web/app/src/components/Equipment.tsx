@@ -1,4 +1,4 @@
-import { equipmentShapes } from '../../../shared/equipment-icons.js';
+import { equipmentShapes } from '../shared/equipment-icons.js';
 import type { Names } from '../lib/i18n';
 import { useI18n } from '../lib/i18n';
 

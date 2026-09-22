@@ -34,8 +34,8 @@ edited on that screen) narrows the list to what they can actually do, and **Do t
 exercise for this session only: the coach's programme is untouched and the set rows record what was
 really done. How the alternatives are computed: [../docs/substitutions.md](../docs/substitutions.md).
 
-The body map and the equipment icons live in `web/shared/`, so the app and the mock pages draw from one
-copy. `web/app/mock/detail-live.html?v=0047` renders the exercise screen against the live catalog
+The body map and the equipment icons live in `web/app/src/shared/`, so the app and the mock pages draw
+from one copy (they must sit inside the app: Vercel only uploads the project's own directory). `web/app/mock/detail-live.html?v=0047` renders the exercise screen against the live catalog
 without signing in (development only).
 
 ## admin (coach)

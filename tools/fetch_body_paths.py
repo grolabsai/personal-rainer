@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build web/shared/body-paths.js — the anatomical SVG paths for the body map.
+"""Build web/app/src/shared/body-paths.js — the anatomical SVG paths for the body map.
 
     python3 tools/fetch_body_paths.py
 
@@ -15,7 +15,7 @@ import subprocess
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 REPO = os.path.dirname(HERE)
-OUT = os.path.join(REPO, 'web', 'shared', 'body-paths.js')
+OUT = os.path.join(REPO, 'web', 'app', 'src', 'shared', 'body-paths.js')
 SRC = 'https://raw.githubusercontent.com/HichamELBSI/react-native-body-highlighter'
 REF = 'main'            # replaced with the resolved commit below
 FILES = {'front': 'assets/bodyFront.ts', 'back': 'assets/bodyBack.ts'}

@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { BODY_MAP_CSS, bodyMap, viewsFor, type BodyView, type MuscleState } from '../../../shared/body-map.js';
+import { BODY_MAP_CSS, bodyMap, viewsFor, type BodyView, type MuscleState } from '../shared/body-map.js';
 
 // The same body map the mock pages use: one vector shape per muscle, coloured by state.
 // It builds SVG as a string, so the CSS travels with it and is injected once.

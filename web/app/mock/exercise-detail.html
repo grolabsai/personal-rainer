@@ -108,8 +108,8 @@ details.compare summary{cursor:pointer;font-size:12.5px;color:var(--gl-text-seco
 </div>
 
 <script type="module">
-import { bodyMap, viewsFor, BODY_MAP_CSS } from '../../shared/body-map.js';
-import { equipmentIcon as icon } from '../../shared/equipment-icons.js';
+import { bodyMap, viewsFor, BODY_MAP_CSS } from '../src/shared/body-map.js';
+import { equipmentIcon as icon } from '../src/shared/equipment-icons.js';
 document.head.insertAdjacentHTML('beforeend', `<style>${BODY_MAP_CSS}</style>`);
 const M = 'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/7455efae41b330c265e7cd4b78dfa848e7ce5ebd/';
 const EQ_NAME = { bodyweight:'Bodyweight', dumbbell:'Dumbbell', barbell:'Barbell', kettlebell:'Kettlebell', cable:'Cable machine',
