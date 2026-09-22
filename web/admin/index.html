@@ -387,7 +387,7 @@ const nm = o => (o && (o[UI_LANG] || o.en)) || '';
 
 const D = window.EXPLORER_DATA;
 if (!D) {
-  document.getElementById('main').innerHTML = `<div class="fatal"><h2>${s('missing_data')}</h2><p>${s('missing_data_b')}</p><pre class="mono">python3 tools/exercise-explorer/build.py</pre></div>`;
+  document.getElementById('main').innerHTML = `<div class="fatal"><h2>${s('missing_data')}</h2><p>${s('missing_data_b')}</p><pre class="mono">python3 web/admin/build.py</pre></div>`;
   throw new Error('data.js missing');
 }
 const EX = D.exercises;
@@ -714,7 +714,7 @@ async function sbFetchAll(table, select, order){
 async function renderTaxonomy(){
   const tree = document.getElementById('taxtree'), det = document.getElementById('taxdetail');
   if (!D.supabase || !D.supabase.url || !D.supabase.key) {
-    tree.innerHTML = `<div class="state error"><strong>Not connected</strong>No Supabase URL or key in <span class="mono">.env</span>. Add them, then run <span class="mono">python3 tools/exercise-explorer/build.py</span> and reload.</div>`;
+    tree.innerHTML = `<div class="state error"><strong>Not connected</strong>No Supabase URL or key in <span class="mono">.env</span>. Add them, then run <span class="mono">python3 web/admin/build.py</span> and reload.</div>`;
     det.innerHTML = ''; return;
   }
   tree.innerHTML = `<div class="state"><strong>Loading taxonomy…</strong>Reading muscles and ${'9,000+'} exercise links from ${esc(new URL(D.supabase.url).host)}.</div>`;
@@ -802,7 +802,7 @@ const XS = {status: 'idle', open: new Set(), sel: null, mode: 'any', have: new S
 async function renderExercises(){
   const tree = document.getElementById('exlist');
   if (!D.supabase || !D.supabase.url || !D.supabase.key) {
-    tree.innerHTML = `<div class="state error"><strong>${s('x_not_connected')}</strong><span class="mono">.env</span> → SUPABASE_URL / SUPABASE_ANON_KEY, <span class="mono">python3 tools/exercise-explorer/build.py</span></div>`;
+    tree.innerHTML = `<div class="state error"><strong>${s('x_not_connected')}</strong><span class="mono">.env</span> → SUPABASE_URL / SUPABASE_ANON_KEY, <span class="mono">python3 web/admin/build.py</span></div>`;
     return;
   }
   tree.innerHTML = `<div class="state"><strong>${s('x_loading')}</strong>${esc(s('x_loading_b', new URL(D.supabase.url).host))}</div>`;

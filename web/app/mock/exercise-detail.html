@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mock · Exercise detail with substitutes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* Mock only — not wired to the database. GroLabs tokens, same as the app. */
+:root{
+  --gl-accent:#fae194; --gl-accent-on:#131316; --gl-accent-on-light:#a17914;
+  --gl-bg:#131316; --gl-surface:#1c1d24; --gl-surface-hover:#22232a; --gl-panel:#24252d;
+  --gl-border:rgba(255,255,255,.08); --gl-border-strong:rgba(255,255,255,.16);
+  --gl-text:#EDEAE0; --gl-text-strong:#fff; --gl-text-secondary:rgba(237,234,224,.6);
+  --gl-text-tertiary:rgba(237,234,224,.4); --gl-text-muted:rgba(237,234,224,.28);
+  --gl-success:#10b981; --gl-success-bg:rgba(16,185,129,.12); --gl-success-text:#34d399;
+  --gl-warning:#f59e0b; --gl-warning-bg:rgba(245,158,11,.12); --gl-warning-text:#fbbf24;
+  --gl-probe-category:#5FB6A6; --gl-probe-homepage:#A98EDA; --gl-probe-site-wide:#6E9BD6;
+  --gl-radius-sm:6px; --gl-radius-md:8px; --gl-radius-lg:12px;
+  --gl-font:"Hanken Grotesk",-apple-system,BlinkMacSystemFont,sans-serif;
+  --gl-font-mono:ui-monospace,"SF Mono",Menlo,monospace;
+  --gl-accent-ink:var(--gl-accent); color-scheme:dark;
+}
+.gl-light{--gl-bg:#FAFAF9;--gl-surface:#fff;--gl-surface-hover:#EFEFEE;--gl-panel:#EAEAEE;
+  --gl-border:rgba(0,0,0,.08);--gl-border-strong:rgba(0,0,0,.16);--gl-text:#1A1A1A;--gl-text-strong:#000;
+  --gl-text-secondary:#5F5E5A;--gl-text-tertiary:#888780;--gl-text-muted:#B4B2A9;
+  --gl-success:#1D9E75;--gl-success-bg:#E1F5EE;--gl-success-text:#085041;
+  --gl-warning:#B27A00;--gl-warning-bg:#FBEFD3;--gl-warning-text:#5D3F00;
+  --gl-accent-ink:var(--gl-accent-on-light);color-scheme:light}
+*{box-sizing:border-box} body{margin:0;background:var(--gl-bg);color:var(--gl-text);font:15px/1.5 var(--gl-font)}
+button{font:inherit;color:inherit}
+.wrap{display:flex;gap:28px;justify-content:center;align-items:flex-start;padding:22px;flex-wrap:wrap}
+.phone{width:390px;border:1px solid var(--gl-border-strong);border-radius:22px;overflow:hidden;background:var(--gl-bg);box-shadow:0 12px 40px rgba(0,0,0,.35)}
+.phone-label{font-family:var(--gl-font-mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--gl-text-tertiary);margin:0 0 8px 6px}
+.topbar{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--gl-border)}
+.topbar .t{flex:1;font-weight:700;color:var(--gl-text-strong);font-size:14px}
+.link{background:none;border:0;color:var(--gl-text-secondary);font-size:14px;cursor:pointer;padding:4px}
+.body{padding:16px;max-height:760px;overflow:auto}
+h1{font-size:21px;line-height:1.25;margin:2px 0 4px;color:var(--gl-text-strong)}
+h2{font-size:12px;font-family:var(--gl-font-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--gl-text-secondary);font-weight:400;margin:22px 0 4px}
+h2 + .sub{font-size:12.5px;color:var(--gl-text-tertiary);margin:0 0 10px}
+.muted{color:var(--gl-text-secondary)} .small{font-size:13px}
+.media{background:#fff;border-radius:var(--gl-radius-lg);padding:8px;display:flex;justify-content:center}
+.media img{width:180px;height:180px}
+.kv{display:grid;grid-template-columns:104px minmax(0,1fr);gap:6px 12px;margin:14px 0 0;font-size:13.5px}
+.kv dt{color:var(--gl-text-tertiary);font-family:var(--gl-font-mono);font-size:11px;text-transform:uppercase;letter-spacing:.06em;padding-top:3px}
+.kv dd{margin:0;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.pill{display:inline-flex;align-items:center;gap:5px;font-size:12px;padding:2px 9px;border-radius:99px;border:1px solid var(--c,var(--gl-border-strong));background:color-mix(in srgb,var(--c,transparent) 14%,transparent);white-space:nowrap}
+.pill.primary{--c:var(--gl-probe-homepage)} .pill.secondary{--c:var(--gl-probe-site-wide)} .pill.eq{--c:var(--gl-probe-category)}
+.pill.missing{--c:var(--gl-warning);color:var(--gl-warning-text)}
+.pill.have{--c:var(--gl-success);color:var(--gl-success-text)}
+.icon{width:16px;height:16px;flex:none}
+.notice{display:flex;gap:10px;align-items:flex-start;border-left:3px solid var(--gl-warning);background:var(--gl-warning-bg);color:var(--gl-warning-text);padding:10px 12px;border-radius:var(--gl-radius-sm);margin-top:14px;font-size:13.5px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:42px;padding:0 14px;border-radius:var(--gl-radius-md);border:1px solid var(--gl-border-strong);background:var(--gl-surface);cursor:pointer;font-weight:600;width:100%}
+.btn.primary{background:var(--gl-accent);color:var(--gl-accent-on);border-color:var(--gl-accent)}
+.level{margin-top:8px}
+.opt{display:grid;grid-template-columns:52px minmax(0,1fr) auto;gap:10px;align-items:center;width:100%;text-align:left;background:var(--gl-surface);border:1px solid var(--gl-border);border-radius:var(--gl-radius-lg);padding:10px;margin-bottom:8px;cursor:pointer}
+.opt:hover{background:var(--gl-surface-hover)}
+.opt img{width:52px;height:52px;border-radius:var(--gl-radius-sm);background:#fff}
+.opt .nm{display:block;font-weight:600;font-size:13.5px;line-height:1.3}
+.opt .why{display:block;font-size:12px;color:var(--gl-text-secondary);margin-top:2px}
+.opt .eqs{display:flex;gap:4px;margin-top:5px;align-items:center;flex-wrap:wrap}
+.opt.blocked{opacity:.5;border-style:dashed;cursor:default}
+.badge{font-family:var(--gl-font-mono);font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;padding:2px 7px;border-radius:99px;border:1px solid var(--gl-border-strong);color:var(--gl-text-tertiary);white-space:nowrap}
+.badge.l1{border-color:var(--gl-success);color:var(--gl-success-text)}
+.badge.l2{border-color:var(--gl-probe-homepage);color:var(--gl-probe-homepage)}
+.badge.l3{border-color:var(--gl-probe-site-wide);color:var(--gl-probe-site-wide)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:10px 0 2px}
+.chip{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;padding:4px 10px;border-radius:99px;border:1px solid var(--gl-border-strong);background:none;cursor:pointer}
+.chip[aria-pressed="true"]{border-color:var(--gl-success);background:var(--gl-success-bg);color:var(--gl-success-text)}
+.maplegend{display:flex;gap:12px;justify-content:center;margin-top:8px;font-size:12px;color:var(--gl-text-secondary)}
+.maplegend i{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+.changes{margin-top:8px;border-left:3px solid var(--gl-probe-homepage);background:color-mix(in srgb,var(--gl-probe-homepage) 8%,transparent);border-radius:var(--gl-radius-sm);padding:8px 10px}
+.changes .h{font-family:var(--gl-font-mono);font-size:9.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--gl-text-tertiary)}
+.changes ul{margin:4px 0 0;padding-left:16px;font-size:12.5px}
+.changes li{margin:2px 0}
+.changes .same{font-size:12.5px;color:var(--gl-success-text)}
+details.compare{margin-top:8px}
+details.compare summary{cursor:pointer;font-size:12.5px;color:var(--gl-text-secondary)}
+.compare-grid{display:grid;gap:10px;margin-top:8px;text-align:center}
+.compare-grid>div{background:var(--gl-bg);border:1px solid var(--gl-border);border-radius:var(--gl-radius-md);padding:8px}
+.compare-grid h4{margin:0 0 6px;font-size:11px;font-family:var(--gl-font-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--gl-text-tertiary);font-weight:400}
+.legend{max-width:360px}
+.legend h3{font-size:12px;font-family:var(--gl-font-mono);letter-spacing:.1em;text-transform:uppercase;color:var(--gl-text-secondary);font-weight:400;margin:0 0 10px}
+.legend .row{display:flex;align-items:center;gap:10px;padding:6px 0;border-bottom:1px solid var(--gl-border);font-size:13.5px}
+.legend .row .icon{width:20px;height:20px;color:var(--gl-text)}
+.note{font-size:12.5px;color:var(--gl-text-tertiary);margin-top:14px;max-width:360px}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div>
+    <p class="phone-label">Athlete app · exercise detail</p>
+    <div class="phone">
+      <div class="topbar"><button class="link" type="button">‹ Back</button><span class="t">Day A · Squat and press</span><button class="link" type="button">EN</button></div>
+      <div class="body" id="detail"></div>
+    </div>
+  </div>
+
+  <div class="legend">
+    <h3>Equipment icons</h3>
+    <div id="legend"></div>
+    <p class="note"><b>Mock only.</b> Real exercises, names and images from the catalog; the “my equipment” chips below the swap
+      section are clickable so you can see how availability changes what is offered. Nothing is saved.</p>
+    <p class="note">Media © Gym visual — gymvisual.com · exercise data (MIT) from hasaneyldrm/exercises-dataset</p>
+  </div>
+</div>
+
+<script type="module">
+import { bodyMap, viewsFor, BODY_MAP_CSS } from '../../shared/body-map.js';
+import { equipmentIcon as icon } from '../../shared/equipment-icons.js';
+document.head.insertAdjacentHTML('beforeend', `<style>${BODY_MAP_CSS}</style>`);
+const M = 'https://raw.githubusercontent.com/hasaneyldrm/exercises-dataset/7455efae41b330c265e7cd4b78dfa848e7ce5ebd/';
+const EQ_NAME = { bodyweight:'Bodyweight', dumbbell:'Dumbbell', barbell:'Barbell', kettlebell:'Kettlebell', cable:'Cable machine',
+  band:'Resistance band', machine:'Lever machine', 'smith-machine':'Smith machine', bench:'Bench', 'dip-bars':'Dip bars',
+  'stability-ball':'Stability ball', 'pull-up-bar':'Pull-up bar', box:'Box / step', wall:'Wall', chair:'Chair' };
+
+// What the athlete has. Click the chips to change it.
+let have = new Set(['bodyweight', 'dumbbell', 'bench', 'band', 'dip-bars']);
+
+const MUSCLE = { pectorals:'Chest (pectorals)', 'pectoralis-major-clavicular':'Upper chest', 'pectoralis-major-sternal':'Lower chest',
+  deltoids:'Shoulders (deltoids)', 'anterior-deltoid':'Front shoulders', 'triceps-brachii':'Triceps', abdominals:'Abs',
+  obliques:'Obliques', 'latissimus-dorsi':'Lats', trapezius:'Traps', glutes:'Glutes', quadriceps:'Quads', hamstrings:'Hamstrings',
+  calves:'Calves', 'biceps-brachii':'Biceps', forearm:'Forearms', 'erector-spinae':'Lower back' };
+const mName = id => MUSCLE[id] || id;
+// secondary first, primary last: primary wins when a muscle is in both lists.
+const cmpViews = o => viewsFor({ ...statesOf(planned), ...statesOf(o) });
+const statesOf = x => Object.fromEntries([...x.secondary.map(m => [m, 'secondary']), ...x.primary.map(m => [m, 'primary'])]);
+
+const planned = { id:'0025', name:'Bench press · Flat — Barbell + Bench', img:'images/0025-EIeI8Vf.jpg', gif:'videos/0025-EIeI8Vf.gif',
+  equipment:['barbell','bench'], plan:'4 × 6-8', rest:150,
+  primary:['pectorals'], secondary:['deltoids','triceps-brachii'] };
+
+// Levels: 1 same exercise + same attributes, 2 same exercise + an attribute differs, 3 different exercise, same pattern.
+// muscles: what each option works. emphasis: shifts the data alone cannot show (rules per attribute).
+const options = [
+  { lvl:1, id:'0289', name:'Bench press · Flat — Dumbbell + Bench', img:'images/0289-SpYC0Kp.jpg', eq:['dumbbell','bench'],
+    why:'Dumbbells instead of a barbell.', primary:['pectorals'], secondary:['deltoids','triceps-brachii'] },
+  { lvl:1, id:'0748', name:'Bench press · Flat — Smith machine + Bench', img:'images/0748-trqKQv2.jpg', eq:['smith-machine','bench'],
+    why:'Guided bar on rails.', primary:['pectorals'], secondary:['deltoids','triceps-brachii'] },
+  { lvl:1, id:'0577', name:'Bench press · Flat — Lever machine', img:'images/0577-T0yTjgW.jpg', eq:['machine'],
+    why:'Chest press machine.', primary:['pectorals'], secondary:['deltoids','triceps-brachii'] },
+  { lvl:1, id:'0151', name:'Bench press · Flat — Cable machine + Bench', img:'images/0151-7xI5MXA.jpg', eq:['cable','bench'],
+    why:'Cables keep tension through the whole range.', primary:['pectorals'], secondary:['deltoids','triceps-brachii'] },
+  { lvl:1, id:'1254', name:'Bench press · Flat — Resistance band + Bench', img:'images/1254-khlHMqs.jpg', eq:['band','bench'],
+    why:'Band resistance, hardest at the top.', primary:['pectorals'], secondary:['deltoids','triceps-brachii'] },
+  { lvl:2, id:'0314', name:'Bench press · Incline — Dumbbell + Bench', img:'images/0314-ns0SIbU.jpg', eq:['dumbbell','bench'],
+    why:'The bench angle changes.', primary:['pectoralis-major-clavicular'], secondary:['deltoids','triceps-brachii'],
+    emphasis:['More front shoulders, less lower chest'] },
+  { lvl:2, id:'0352', name:'Bench press · Flat · Neutral grip — Dumbbell + Bench', img:'images/0352-pP8wP2P.jpg', eq:['dumbbell','bench'],
+    why:'The grip changes: palms face each other.', primary:['pectorals'], secondary:['triceps-brachii','deltoids'],
+    emphasis:['More triceps', 'Easier on the shoulder joint'] },
+  { lvl:2, id:'1298', name:'Bench press · Flat · One arm — Kettlebell', img:'images/1298-rg59QCH.jpg', eq:['kettlebell'],
+    why:'One side at a time.', primary:['pectorals'], secondary:['deltoids','triceps-brachii','obliques'],
+    emphasis:['Half the load per side'] },
+  { lvl:3, id:'0662', name:'Push-up — Bodyweight', img:'images/0662-I4hDWkc.jpg', eq:['bodyweight'],
+    why:'Same horizontal push, your body is the load.', primary:['pectorals'], secondary:['deltoids','triceps-brachii','abdominals'] },
+  { lvl:3, id:'0251', name:'Chest dip — Bodyweight + Dip bars', img:'images/0251-9WTm7dq.jpg', eq:['bodyweight','dip-bars'],
+    why:'Same push pattern at a downward angle.', primary:['pectoralis-major-sternal'], secondary:['triceps-brachii','deltoids'],
+    emphasis:['More triceps'] },
+  { lvl:3, id:'3211', name:'Push-up · Kneeling — Bodyweight', img:'images/3211-ZOuKWir.jpg', eq:['bodyweight'],
+    why:'Easier push-up, from the knees.', primary:['pectorals'], secondary:['deltoids','triceps-brachii'],
+    emphasis:['Lighter load'] },
+];
+
+// Plain-language description of how an option's muscles differ from the planned exercise.
+function describeChange(o) {
+  const lines = [];
+  const pA = planned.primary, pB = o.primary;
+  const samePrimary = pA.length === pB.length && pA.every(m => pB.includes(m));
+  if (!samePrimary) lines.push(`<b>Primary:</b> ${pB.map(mName).join(', ')} instead of ${pA.map(mName).join(', ')}`);
+  const added = o.secondary.filter(m => !planned.secondary.includes(m));
+  const gone = planned.secondary.filter(m => !o.secondary.includes(m));
+  if (added.length) lines.push(`<b>Adds:</b> ${added.map(mName).join(', ')} as secondary`);
+  if (gone.length) lines.push(`<b>Drops:</b> ${gone.map(mName).join(', ')}`);
+  (o.emphasis || []).forEach(e => lines.push(e));
+  return lines;
+}
+const LEVELS = {
+  1: { title:'Same exercise, other equipment', sub:'Identical movement and muscles. Only the equipment changes.', badge:'Same' },
+  2: { title:'Close variation', sub:'Same exercise, one detail changes — the emphasis shifts a little.', badge:'Close' },
+  3: { title:'Similar exercise', sub:'A different exercise that trains the same pattern and muscles.', badge:'Similar' },
+};
+
+const canDo = o => o.eq.every(e => have.has(e));
+const missing = list => list.filter(e => !have.has(e));
+
+function eqPills(list, cls = 'eq') {
+  return list.map(e => `<span class="pill ${cls}">${icon(e)}${EQ_NAME[e] || e}</span>`).join('');
+}
+
+function render() {
+  const miss = missing(planned.equipment);
+  const avail = options.filter(canDo), blocked = options.filter(o => !canDo(o));
+  const optRow = o => {
+    const lines = describeChange(o);
+    return `<div class="opt ${canDo(o) ? '' : 'blocked'}">
+      <img src="${M}${o.img}" alt="" loading="lazy">
+      <span><span class="nm">${o.name}</span><span class="why">${o.why}</span>
+        <span class="eqs">${o.eq.map(e => `<span class="pill ${have.has(e) ? 'eq' : 'missing'}">${icon(e)}${EQ_NAME[e] || e}</span>`).join('')}</span>
+        ${o.lvl === 1
+          ? `<span class="changes"><span class="h">Muscles</span><div class="same">Same as planned — chest, shoulders, triceps.</div></span>`
+          : `<span class="changes"><span class="h">What changes</span><ul>${lines.map(l => `<li>${l}</li>`).join('')}</ul></span>`}
+        ${o.lvl === 1 ? '' : `<details class="compare"><summary>Compare on the body</summary>
+          <div class="compare-grid">
+            <div><h4>Planned</h4>${bodyMap({ states: statesOf(planned), width: 104, labels: false, views: cmpViews(o) })}</div>
+            <div><h4>This option</h4>${bodyMap({ states: statesOf(o), width: 104, labels: false, views: cmpViews(o) })}</div>
+          </div></details>`}
+      </span>
+      <span class="badge l${o.lvl}">${LEVELS[o.lvl].badge}</span></div>`;
+  };
+
+  document.getElementById('detail').innerHTML = `
+    <div class="media"><img src="${M}${planned.gif}" alt=""></div>
+    <h1>${planned.name}</h1>
+    <div class="muted small">${planned.plan} · rest ${planned.rest} s</div>
+    <dl class="kv">
+      <dt>Equipment</dt><dd>${planned.equipment.map(e => `<span class="pill ${have.has(e) ? 'eq' : 'missing'}">${icon(e)}${EQ_NAME[e]}</span>`).join('')}</dd>
+    </dl>
+    <h2>Muscles worked</h2>
+    ${bodyMap({ states: statesOf(planned), width: 132, title: planned.name })}
+    <div class="maplegend"><span><i style="background:var(--gl-probe-homepage)"></i>Primary: ${planned.primary.map(mName).join(', ')}</span>
+      <span><i style="background:color-mix(in srgb,var(--gl-probe-site-wide) 55%,transparent);border:1px solid var(--gl-probe-site-wide)"></i>Secondary: ${planned.secondary.map(mName).join(', ')}</span></div>
+    ${miss.length ? `<div class="notice"><span>⚠</span><span>You don’t have ${miss.map(e => EQ_NAME[e]).join(' or ')}. ${avail.length} alternatives fit your equipment.</span></div>` : ''}
+    <button class="btn primary" type="button" style="margin-top:14px">Start workout</button>
+
+    <h2>Swap this exercise</h2>
+    <p class="sub">Closest first. ${avail.length} of ${options.length} options fit what you have.</p>
+    ${[1, 2, 3].map(l => {
+      const rows = avail.filter(o => o.lvl === l);
+      if (!rows.length) return '';
+      return `<div class="level"><h2 style="margin-top:14px">${LEVELS[l].title}</h2><p class="sub">${LEVELS[l].sub}</p>${rows.map(optRow).join('')}</div>`;
+    }).join('')}
+    ${blocked.length ? `<div class="level"><h2>Needs equipment you don’t have</h2><p class="sub">Shown so you know what else would open up.</p>${blocked.map(optRow).join('')}</div>` : ''}
+
+    <h2>My equipment</h2>
+    <p class="sub">Tap to change (mock).</p>
+    <div class="chips">${Object.keys(EQ_NAME).map(e => `<button class="chip" type="button" aria-pressed="${have.has(e)}" data-eq="${e}">${icon(e)}${EQ_NAME[e]}</button>`).join('')}</div>`;
+
+  document.getElementById('legend').innerHTML = Object.keys(EQ_NAME)
+    .map(e => `<div class="row">${icon(e)}<span>${EQ_NAME[e]}</span></div>`).join('');
+}
+
+document.addEventListener('click', e => {
+  const c = e.target.closest('[data-eq]'); if (!c) return;
+  const id = c.dataset.eq; have.has(id) ? have.delete(id) : have.add(id);
+  render();
+  document.getElementById('detail').scrollTop = 99999;
+});
+if (window.matchMedia('(prefers-color-scheme: light)').matches) document.documentElement.classList.add('gl-light');
+render();
+</script>
+</body>
+</html>

@@ -2,8 +2,8 @@
 """Build data.js for the Exercise Explorer from a local clone of
 https://github.com/hasaneyldrm/exercises-dataset.
 
-    python3 tools/exercise-explorer/build.py [path/to/exercises-dataset]
-    python3 tools/exercise-explorer/build.py --web      # deployable copy in tools/exercise-explorer/dist/
+    python3 web/admin/build.py [path/to/exercises-dataset]
+    python3 web/admin/build.py --web      # deployable copy in web/admin/dist/
 
 --web makes a private, password-protected site (web/middleware.js): English + Spanish text only,
 thumbnails copied in, GIFs loaded from the dataset repo at the pinned commit.
