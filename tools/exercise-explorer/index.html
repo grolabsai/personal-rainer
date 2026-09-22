@@ -1,0 +1,1020 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Exercise Explorer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+/* GroLabs tokens — values copied from dev-studio/apps/spec/_shell.html, not re-decided. */
+:root{
+  --gl-accent:#fae194; --gl-accent-hover:#fcebab; --gl-accent-on:#131316; --gl-accent-on-light:#a17914;
+  --gl-nav-surface:#0E0E11; --gl-nav-border:rgba(255,255,255,.06);
+  --gl-nav-text:rgba(237,234,224,.6); --gl-nav-text-hover:#ffffff; --gl-nav-text-muted:rgba(255,255,255,.45);
+  --gl-bg:#131316; --gl-bg-deeper:#0E0E11; --gl-surface:#1c1d24; --gl-surface-hover:#22232a; --gl-panel:#24252d;
+  --gl-border:rgba(255,255,255,.08); --gl-border-strong:rgba(255,255,255,.16);
+  --gl-text:#EDEAE0; --gl-text-strong:#FFFFFF; --gl-text-secondary:rgba(237,234,224,.6);
+  --gl-text-tertiary:rgba(237,234,224,.4); --gl-text-muted:rgba(237,234,224,.28);
+  --gl-warning:#f59e0b; --gl-warning-bg:rgba(245,158,11,.12); --gl-warning-text:#fbbf24;
+  --gl-probe-pdp:#E5B567; --gl-probe-category:#5FB6A6; --gl-probe-homepage:#A98EDA;
+  --gl-probe-site-wide:#6E9BD6; --gl-probe-search:#D98AA6;
+  --gl-radius-sm:6px; --gl-radius-md:8px; --gl-radius-lg:12px;
+  --gl-font:"Hanken Grotesk",-apple-system,BlinkMacSystemFont,"Inter","Segoe UI",sans-serif;
+  --gl-font-mono:ui-monospace,"SF Mono","Cascadia Code",Menlo,monospace;
+  --gl-accent-ink:var(--gl-accent);
+  /* One probe hue per field kind, so a value's colour says which field it came from. */
+  --k-body_part:var(--gl-probe-pdp); --k-equipment:var(--gl-probe-category); --k-target:var(--gl-probe-homepage);
+  --k-muscle_group:var(--gl-probe-site-wide); --k-secondary:var(--gl-probe-search);
+}
+.gl-light{
+  --gl-bg:#FAFAF9; --gl-bg-deeper:#F2F2F0; --gl-surface:#FFFFFF; --gl-surface-hover:#EFEFEE; --gl-panel:#EAEAEE;
+  --gl-border:rgba(0,0,0,.08); --gl-border-strong:rgba(0,0,0,.16);
+  --gl-text:#1A1A1A; --gl-text-strong:#000000; --gl-text-secondary:#5F5E5A;
+  --gl-text-tertiary:#888780; --gl-text-muted:#B4B2A9;
+  --gl-warning:#B27A00; --gl-warning-bg:#FBEFD3; --gl-warning-text:#5D3F00;
+  --gl-accent-ink:var(--gl-accent-on-light);
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--gl-bg);color:var(--gl-text);font:14px/1.5 var(--gl-font);display:flex;flex-direction:column;overflow:hidden}
+button{font:inherit;color:inherit}
+button:focus-visible,select:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid var(--gl-accent-ink);outline-offset:2px}
+.mono{font-family:var(--gl-font-mono)}
+
+/* Chrome */
+.chrome{display:flex;align-items:center;gap:20px;padding:10px 18px;background:var(--gl-nav-surface);border-bottom:1px solid var(--gl-nav-border);flex:none}
+.brand{font-weight:700;color:var(--gl-nav-text-hover);white-space:nowrap}
+.lens{display:flex;gap:2px}
+.lens button{background:none;border:0;padding:6px 12px;border-radius:var(--gl-radius-sm);color:var(--gl-nav-text);cursor:pointer;font-family:var(--gl-font-mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase}
+.lens button:hover{color:var(--gl-nav-text-hover)}
+.lens button[aria-selected=true]{background:var(--gl-accent);color:var(--gl-accent-on)}
+.chrome .stats{margin-left:auto;font-family:var(--gl-font-mono);font-size:11px;color:var(--gl-nav-text-muted);white-space:nowrap}
+.btn{background:var(--gl-surface);border:1px solid var(--gl-border-strong);border-radius:var(--gl-radius-sm);padding:5px 12px;cursor:pointer;white-space:nowrap}
+.btn:hover{background:var(--gl-surface-hover)}
+.chrome .btn{background:transparent;border-color:var(--gl-nav-border);color:var(--gl-nav-text)}
+.chrome .btn:hover{color:var(--gl-nav-text-hover)}
+.langsw{border-color:var(--gl-nav-border)}
+.langsw button{color:var(--gl-nav-text);font-family:var(--gl-font-mono);font-size:11px;letter-spacing:.06em}
+.langsw button+button{border-left-color:var(--gl-nav-border)}
+main{flex:1;min-height:0;display:flex}
+.credits{flex:none;padding:5px 18px;border-top:1px solid var(--gl-nav-border);background:var(--gl-nav-surface);color:var(--gl-nav-text-muted);font-size:11px}
+.credits a{color:var(--gl-nav-text)}
+.view{flex:1;min-width:0;min-height:0;display:none}
+.view.on{display:flex}
+
+/* Panes with drag handles */
+.panes{flex:1;display:grid;grid-template-columns:var(--w1,240px) 6px var(--w2,380px) 6px minmax(0,1fr);min-height:0}
+.pane{overflow:auto;min-width:0;min-height:0}
+.handle{cursor:col-resize;background:var(--gl-border);position:relative}
+.handle:hover,.handle.drag{background:var(--gl-accent-ink)}
+.handle::after{content:"";position:absolute;inset:0 -4px}
+
+/* Filters */
+.filters{padding:14px}
+.search{width:100%;padding:8px 10px;border-radius:var(--gl-radius-sm);border:1px solid var(--gl-border-strong);background:var(--gl-surface);color:var(--gl-text);font:inherit}
+.facet{margin-top:14px}
+.facet summary{cursor:pointer;list-style:none;display:flex;gap:8px;align-items:center;padding:4px 0}
+.facet summary::before{content:"+";font-family:var(--gl-font-mono);color:var(--gl-text-tertiary);width:10px}
+.facet[open] summary::before{content:"−"}
+.facet-title{font-family:var(--gl-font-mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--gl-text-secondary)}
+.swatch{width:10px;height:10px;border-radius:3px;flex:none}
+.opt{display:flex;width:100%;align-items:center;gap:8px;padding:3px 8px;background:none;border:1px solid transparent;border-radius:var(--gl-radius-sm);cursor:pointer;text-align:left}
+.opt:hover{background:var(--gl-surface-hover)}
+.opt[aria-pressed=true]{border-color:var(--gl-accent-ink);color:var(--gl-text-strong)}
+.opt .n{margin-left:auto;font-family:var(--gl-font-mono);font-size:11px;color:var(--gl-text-tertiary)}
+.opt[disabled]{opacity:.35;cursor:default}
+.opt[disabled]:hover{background:none}
+
+/* List */
+.listhead{position:sticky;top:0;background:var(--gl-bg);padding:12px 14px;border-bottom:1px solid var(--gl-border);z-index:1}
+.count{font-family:var(--gl-font-mono);font-size:11px;color:var(--gl-text-secondary)}
+.active{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.row{display:grid;grid-template-columns:48px minmax(0,1fr);gap:12px;align-items:center;width:100%;padding:8px 14px;background:none;border:0;border-bottom:1px solid var(--gl-border);cursor:pointer;text-align:left}
+.row:hover{background:var(--gl-surface-hover)}
+.row[aria-current=true]{background:var(--gl-surface);box-shadow:inset 3px 0 0 var(--gl-accent-ink)}
+.thumb{width:48px;height:48px;border-radius:var(--gl-radius-sm);background:var(--gl-panel);object-fit:cover}
+.row .name{font-weight:600;overflow-wrap:break-word}
+.row .sub{display:flex;flex-wrap:wrap;gap:4px;margin-top:3px}
+
+/* Pills: coloured by field kind. Button pills navigate; span pills are plain labels. */
+.pill{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;padding:1px 8px;border-radius:99px;border:1px solid var(--c,var(--gl-border-strong));color:var(--gl-text);background:color-mix(in srgb,var(--c,transparent) 14%,transparent);white-space:nowrap}
+button.pill{cursor:pointer}
+button.pill:hover{background:color-mix(in srgb,var(--c,transparent) 28%,transparent)}
+.pill.k-body_part{--c:var(--k-body_part)} .pill.k-equipment{--c:var(--k-equipment)} .pill.k-target{--c:var(--k-target)}
+.pill.k-muscle_group{--c:var(--k-muscle_group)} .pill.k-secondary{--c:var(--k-secondary)}
+.pill.flag{--c:var(--gl-warning);color:var(--gl-warning-text);font-family:var(--gl-font-mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase}
+
+/* Detail */
+.detail{padding:22px 26px 40px;max-width:900px}
+.empty{padding:48px 26px;color:var(--gl-text-secondary)}
+.empty strong{display:block;color:var(--gl-text);font-size:16px;margin-bottom:4px}
+.hero{display:flex;gap:22px;align-items:flex-start;flex-wrap:wrap}
+.media{display:flex;gap:10px}
+.media figure{margin:0}
+.media img{width:180px;height:180px;border-radius:var(--gl-radius-md);background:#fff;display:block}
+.media figcaption{font-family:var(--gl-font-mono);font-size:10px;color:var(--gl-text-tertiary);margin-top:4px}
+.media .missing{width:180px;height:180px;border-radius:var(--gl-radius-md);border:1px dashed var(--gl-warning);color:var(--gl-warning-text);display:flex;align-items:center;justify-content:center;text-align:center;padding:12px;font-size:12px}
+h1{font-size:24px;line-height:1.2;margin:0 0 10px;color:var(--gl-text-strong);text-transform:capitalize}
+.credit{font-size:11px;color:var(--gl-text-tertiary)}
+.card{background:var(--gl-surface);border:1px solid var(--gl-border);border-radius:var(--gl-radius-lg);padding:18px 20px;margin-top:20px}
+.card-title{font-family:var(--gl-font-mono);font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--gl-text-secondary);margin:0 0 14px;display:flex;align-items:center;gap:10px}
+.card-title .tools{margin-left:auto;text-transform:none;letter-spacing:0}
+.kv{display:grid;grid-template-columns:150px minmax(0,1fr);gap:8px 16px;align-items:baseline}
+.kv>dt{font-family:var(--gl-font-mono);font-size:11px;color:var(--gl-text-tertiary);white-space:nowrap}
+.kv>dd{margin:0;display:flex;flex-wrap:wrap;gap:6px;overflow-wrap:break-word}
+.kv .note{font-size:12px;color:var(--gl-text-tertiary);flex-basis:100%}
+select{background:var(--gl-surface);color:var(--gl-text);border:1px solid var(--gl-border-strong);border-radius:var(--gl-radius-sm);padding:3px 6px;font:inherit;font-size:12px}
+ol.steps{margin:0;padding-left:22px}
+ol.steps li{margin:4px 0}
+.para{margin-top:12px;font-size:13px;color:var(--gl-text-secondary)}
+.related{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px}
+.rel{display:flex;gap:10px;align-items:center;padding:6px;background:none;border:1px solid var(--gl-border);border-radius:var(--gl-radius-md);cursor:pointer;text-align:left}
+.rel:hover{background:var(--gl-surface-hover)}
+.rel img{width:40px;height:40px;border-radius:var(--gl-radius-sm);background:#fff}
+.rel span{font-size:12.5px;text-transform:capitalize;overflow-wrap:break-word;min-width:0}
+.meta{display:flex;flex-wrap:wrap;gap:6px 22px;margin-top:26px;padding-top:12px;border-top:1px solid var(--gl-border);font-family:var(--gl-font-mono);font-size:10.5px;color:var(--gl-text-tertiary)}
+.meta b{font-weight:400;color:var(--gl-text-secondary)}
+
+/* Page lenses (Mapping, Quality, Schema) */
+.page{flex:1;overflow:auto;padding:24px 28px 60px}
+.page-inner{max-width:1100px;margin:0 auto}
+.page h2{font-size:22px;margin:0 0 4px;color:var(--gl-text-strong)}
+.lede{color:var(--gl-text-secondary);margin:0 0 8px;max-width:720px}
+.fact{display:grid;grid-template-columns:28px minmax(0,1fr);gap:10px;padding:8px 0;border-top:1px solid var(--gl-border)}
+.fact:first-child{border-top:0}
+.fact .ok{font-family:var(--gl-font-mono);font-size:10px;padding:1px 0;text-align:center;border-radius:99px;border:1px solid var(--gl-border-strong);color:var(--gl-text-secondary);height:18px}
+.tree .node{display:grid;grid-template-columns:22px minmax(0,1fr) auto;gap:6px;align-items:center;padding:3px 0}
+.tree .kids{margin-left:22px;border-left:1px solid var(--gl-border);padding-left:10px}
+.exp{width:22px;height:22px;border:1px solid var(--gl-border-strong);background:none;border-radius:var(--gl-radius-sm);cursor:pointer;font-family:var(--gl-font-mono);line-height:1;padding:0}
+.exp:hover{background:var(--gl-surface-hover)}
+.exp-spacer{width:22px}
+.tree .n{font-family:var(--gl-font-mono);font-size:11px;color:var(--gl-text-tertiary)}
+.scroll-x{overflow-x:auto}
+table.matrix{border-collapse:separate;border-spacing:2px;font-size:12px}
+.matrix th{font-weight:500;color:var(--gl-text-secondary);white-space:nowrap;padding:4px 8px}
+.matrix thead th{writing-mode:vertical-rl;transform:rotate(180deg);text-align:left;vertical-align:bottom;height:130px;font-size:11.5px}
+.matrix tbody th{text-align:right;text-transform:capitalize}
+.matrix td{padding:0}
+.cell{width:34px;height:28px;border:0;border-radius:4px;cursor:pointer;font-family:var(--gl-font-mono);font-size:11px;color:var(--gl-text-strong);background:color-mix(in srgb,var(--gl-accent-ink) calc(var(--v) * 100%),var(--gl-surface))}
+.cell:hover{outline:2px solid var(--gl-text)}
+.cell.zero{background:transparent;color:var(--gl-text-muted);cursor:default;outline:0}
+.gl-light .cell{color:var(--gl-text-strong)}
+details.issue{background:var(--gl-surface);border:1px solid var(--gl-border);border-radius:var(--gl-radius-lg);margin-top:12px}
+details.issue>summary{cursor:pointer;list-style:none;padding:14px 18px;display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:14px;align-items:center}
+details.issue>summary::-webkit-details-marker{display:none}
+.issue-name{font-weight:600}
+.issue-line{color:var(--gl-text-secondary);font-size:13px}
+.issue-body{padding:0 18px 16px}
+.issue-row{display:grid;grid-template-columns:220px minmax(0,1fr);gap:16px;padding:8px 0;border-top:1px solid var(--gl-border);align-items:baseline}
+.issue-row>div:first-child{font-family:var(--gl-font-mono);font-size:12px;white-space:nowrap}
+.issue-row>div:last-child{display:flex;flex-wrap:wrap;gap:6px}
+table.schema{border-collapse:collapse;width:100%;min-width:860px;font-size:13px}
+.schema th,.schema td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--gl-border);vertical-align:top}
+.schema th{font-family:var(--gl-font-mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--gl-text-tertiary);font-weight:400}
+.schema td.f{font-family:var(--gl-font-mono);white-space:nowrap;color:var(--gl-text-strong)}
+.schema td.t{font-family:var(--gl-font-mono);white-space:nowrap;color:var(--gl-text-secondary)}
+.schema code{font-family:var(--gl-font-mono);font-size:12px;overflow-wrap:break-word}
+.xmodal{width:min(900px,calc(100vw - 32px));max-height:calc(100vh - 48px);padding:0;border:1px solid var(--gl-border-strong);border-radius:var(--gl-radius-lg);background:var(--gl-bg);color:var(--gl-text);overflow:auto}
+.xmodal::backdrop{background:rgba(0,0,0,.55)}
+.xmodal-head{position:sticky;top:0;z-index:1;display:flex;gap:16px;align-items:flex-start;justify-content:space-between;padding:18px 22px 12px;background:var(--gl-bg);border-bottom:1px solid var(--gl-border)}
+.xmodal-head h2{margin:4px 0;font-size:20px;line-height:1.25;color:var(--gl-text-strong)}
+.xmodal-body{padding:18px 22px 24px}
+.fatal{margin:60px auto;max-width:560px;padding:0 20px}
+/* Taxonomy lens */
+/* Exercises lens */
+.panes4{flex:1;display:grid;grid-template-columns:var(--w4,340px) 6px minmax(0,1fr);min-height:0}
+.exlist{padding:14px}
+.exlist select{width:100%;margin-top:10px;padding:6px 8px;font-size:13px}
+.exitem{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center;width:100%;padding:7px 8px;background:none;border:1px solid transparent;border-radius:var(--gl-radius-sm);cursor:pointer;text-align:left}
+.exitem:hover{background:var(--gl-surface-hover)}
+.exitem[aria-current=true]{border-color:var(--gl-accent-ink)}
+.exitem .es{display:block;font-size:12px;color:var(--gl-text-tertiary)}
+.exitem .n{font-family:var(--gl-font-mono);font-size:11px;color:var(--gl-text-tertiary);white-space:nowrap}
+.vgroup{margin-top:18px}
+.vgroup-title{font-family:var(--gl-font-mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--gl-text-secondary);margin:0 0 8px;display:flex;gap:8px;align-items:center}
+.vgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px}
+.vcard{display:grid;grid-template-columns:64px minmax(0,1fr);gap:10px;padding:8px;background:var(--gl-surface);border:1px solid var(--gl-border);border-radius:var(--gl-radius-md);cursor:pointer;text-align:left;align-items:start}
+.vcard:hover{background:var(--gl-surface-hover)}
+.vcard img{width:64px;height:64px;border-radius:var(--gl-radius-sm);background:#fff}
+.vcard .vn{font-size:12.5px;line-height:1.35;overflow-wrap:break-word}
+.vcard .vp{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px}
+.vcard.dup{opacity:.55;border-style:dashed}
+.pill.k-dim{--c:var(--gl-probe-homepage)} .pill.k-eq{--c:var(--k-equipment)}
+.pill.flag-dup{--c:var(--gl-text-tertiary);font-family:var(--gl-font-mono);font-size:10px;text-transform:uppercase;letter-spacing:.05em}
+.pill.flag-look{--c:var(--gl-warning);color:var(--gl-warning-text);font-family:var(--gl-font-mono);font-size:10px;text-transform:uppercase;letter-spacing:.05em}
+.pill.flag-label{--c:var(--gl-probe-search);font-style:italic}
+.opt-row{display:flex;flex-wrap:wrap;gap:6px}
+button.pill[aria-pressed=true]{background:var(--gl-accent);color:var(--gl-accent-on);border-color:var(--gl-accent)}
+.panes4{--w4:520px}
+.xflat .xrow{display:grid;grid-template-columns:22px minmax(0,1fr);gap:4px;align-items:center;margin:1px 0}
+.xrow .xany{display:flex;gap:8px;align-items:center;min-width:0;background:none;border:1px solid transparent;border-radius:var(--gl-radius-sm);padding:4px 8px;cursor:pointer;text-align:left}
+.xrow .xany:hover:not([disabled]){background:var(--gl-surface-hover)}
+.xrow .xany[disabled]{cursor:default}
+.xrow .xnm{min-width:0;overflow-wrap:break-word}
+.xrow .counts{margin-left:auto}
+.xrow.d0 .xnm{font-weight:700;font-size:14.5px;color:var(--gl-text-strong)}
+.xrow.d0{margin-top:12px}
+.xrow.d1{margin-left:18px}.xrow.d1 .xany{padding-left:8px}
+.xrow.d1 .xnm{font-weight:600}
+.xrow.d2{margin-left:36px}.xrow.d2 .xany{padding-left:8px}
+.xrow.d3{margin-left:54px}.xrow.d3 .xany{padding-left:8px;font-size:13px}
+.xrow.zero .xnm{color:var(--gl-text-muted)}
+.xblock{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:4px;align-items:center;border:1px solid transparent;border-radius:var(--gl-radius-md);padding:1px 3px 1px 0}
+.xblock.on{border-color:var(--gl-accent-ink);box-shadow:inset 3px 0 0 var(--gl-accent-ink);background:color-mix(in srgb,var(--gl-accent-ink) 7%,transparent)}
+.xrank{margin:18px 0 4px;padding-top:10px;border-top:1px solid var(--gl-border)}
+.xrank:first-child{border-top:0;margin-top:4px}
+.xcheck.off{opacity:.35;cursor:default;border-style:dashed}
+.xrow .xmode{font-family:var(--gl-font-mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--gl-accent-ink);white-space:nowrap}
+.xrow .xps{background:none;border:1px solid var(--gl-border-strong);border-radius:var(--gl-radius-sm);padding:2px 8px;font-size:11px;cursor:pointer}
+.xrow .xps:hover:not([disabled]){background:var(--gl-surface-hover)}
+.xrow .xps[aria-pressed=true]{background:var(--gl-accent);color:var(--gl-accent-on);border-color:var(--gl-accent)}
+.xrow .xps[disabled]{opacity:.25;cursor:default}
+.xname{display:flex;gap:8px;align-items:center;min-width:0}
+.xname .lv{font-family:var(--gl-font-mono);font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--gl-text-tertiary);border:1px solid var(--gl-border-strong);border-radius:99px;padding:0 6px;white-space:nowrap}
+.xeqbar{position:sticky;top:0;z-index:2;background:var(--gl-bg);padding:16px 26px 12px;border-bottom:1px solid var(--gl-border)}
+.xcheck{display:inline-flex;align-items:center;gap:6px;padding:3px 10px;border:1px solid var(--k-equipment);border-radius:99px;font-size:12.5px;cursor:pointer;background:color-mix(in srgb,var(--k-equipment) 10%,transparent)}
+.xcheck:has(input:checked){background:color-mix(in srgb,var(--k-equipment) 32%,transparent)}
+.xcheck .n{font-family:var(--gl-font-mono);font-size:10.5px;color:var(--gl-text-tertiary)}
+.xcheck input{accent-color:var(--k-equipment);margin:0}
+.panes2{flex:1;display:grid;grid-template-columns:var(--w3,420px) 6px minmax(0,1fr);min-height:0}
+.taxtree{padding:14px}
+.taxtree .node{display:grid;grid-template-columns:22px minmax(0,1fr) auto;gap:6px;align-items:center;padding:2px 0}
+.taxtree .kids{margin-left:22px;border-left:1px solid var(--gl-border);padding-left:8px}
+.tnode{background:none;border:1px solid transparent;border-radius:var(--gl-radius-sm);padding:2px 6px;cursor:pointer;text-align:left;display:flex;gap:8px;align-items:center;min-width:0}
+.tnode:hover{background:var(--gl-surface-hover)}
+.tnode[aria-current=true]{border-color:var(--gl-accent-ink);color:var(--gl-text-strong)}
+.tnode .lv{font-family:var(--gl-font-mono);font-size:9.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--gl-text-tertiary);border:1px solid var(--gl-border-strong);border-radius:99px;padding:0 6px;white-space:nowrap}
+.tnode.zero{color:var(--gl-text-muted)}
+.counts{display:flex;gap:6px;font-family:var(--gl-font-mono);font-size:10.5px;color:var(--gl-text-tertiary);white-space:nowrap}
+.counts b{font-weight:400;color:var(--gl-text-secondary)}
+.taxhead{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:12px}
+.seg{display:inline-flex;border:1px solid var(--gl-border-strong);border-radius:var(--gl-radius-sm);overflow:hidden}
+.seg button{background:none;border:0;padding:3px 10px;cursor:pointer;font-size:12px}
+.seg button+button{border-left:1px solid var(--gl-border-strong)}
+.seg button[aria-pressed=true]{background:var(--gl-accent);color:var(--gl-accent-on)}
+.pill.via-direct{--c:var(--gl-probe-category)} .pill.via-set{--c:var(--gl-probe-search)} .pill.via-rollup{--c:var(--gl-border-strong)}
+.pill.role-target{--c:var(--gl-probe-homepage)} .pill.role-secondary{--c:var(--gl-probe-site-wide)}
+.exrow{display:grid;grid-template-columns:40px minmax(0,1fr) auto;gap:10px;align-items:center;width:100%;padding:6px 4px;background:none;border:0;border-top:1px solid var(--gl-border);cursor:pointer;text-align:left}
+.exrow:hover{background:var(--gl-surface-hover)}
+.exrow img{width:40px;height:40px;border-radius:var(--gl-radius-sm);background:#fff}
+.exrow .nm{text-transform:capitalize;overflow-wrap:break-word}
+.exrow .tags{display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end}
+.state{padding:48px 26px;color:var(--gl-text-secondary)}
+.state strong{display:block;color:var(--gl-text);font-size:16px;margin-bottom:4px}
+.state.error{border-left:3px solid var(--gl-warning);margin:20px;padding:16px 20px}
+
+</style>
+</head>
+<body>
+<header class="chrome">
+  <span class="brand" data-s="app_title"></span>
+  <nav class="lens" role="tablist" id="lens"></nav>
+  <span class="stats" id="stats"></span>
+  <button class="btn" id="theme" type="button"></button>
+  <span class="seg langsw" id="langsw" role="group" aria-label="Language"><button type="button" data-ui-lang="en">EN</button><button type="button" data-ui-lang="es">ES</button></span>
+</header>
+<main id="main">
+  <section class="view" id="view-browse">
+    <div class="panes" id="panes">
+      <aside class="pane filters" id="filters"></aside>
+      <div class="handle" data-col="1" role="separator" aria-orientation="vertical"></div>
+      <div class="pane" id="list"></div>
+      <div class="handle" data-col="2" role="separator" aria-orientation="vertical"></div>
+      <div class="pane" id="detail"></div>
+    </div>
+  </section>
+  <section class="view" id="view-mapping"><div class="page"><div class="page-inner" id="mapping"></div></div></section>
+  <section class="view" id="view-quality"><div class="page"><div class="page-inner" id="quality"></div></div></section>
+  <section class="view" id="view-exercises">
+    <div class="panes4" id="panes4">
+      <div class="pane exlist" id="exlist"></div>
+      <div class="handle" data-col="4" role="separator" aria-orientation="vertical"></div>
+      <div class="pane" id="exdetail"></div>
+    </div>
+  </section>
+  <section class="view" id="view-taxonomy">
+    <div class="panes2" id="panes2">
+      <div class="pane taxtree" id="taxtree"></div>
+      <div class="handle" data-col="3" role="separator" aria-orientation="vertical"></div>
+      <div class="pane" id="taxdetail"></div>
+    </div>
+  </section>
+  <section class="view" id="view-schema"><div class="page"><div class="page-inner" id="schema"></div></div></section>
+</main>
+<dialog class="xmodal" id="xmodal" aria-labelledby="xmodal-title"></dialog>
+<footer class="credits"><span data-s="credit_media"></span> <a href="https://gymvisual.com/" target="_blank" rel="noopener">gymvisual.com</a> · <span data-s="credit_data"></span> <a href="https://github.com/hasaneyldrm/exercises-dataset" target="_blank" rel="noopener">hasaneyldrm/exercises-dataset</a></footer>
+
+<script src="data.js" onerror="window.EXPLORER_DATA=null"></script>
+<script>
+// ---- String catalog (English source; other locales would sit beside it) ----
+const STR = {
+  app_title: 'Exercise Explorer',
+  lens_browse: 'Dataset', lens_mapping: 'Mapping', lens_quality: 'Quality', lens_schema: 'Schema', lens_taxonomy: 'Taxonomy', lens_exercises: 'Exercises',
+  theme_to_light: 'Light theme', theme_to_dark: 'Dark theme',
+  stats: (n, l) => `${n} exercises · ${l} languages`,
+  search: 'Search name, muscle, equipment…',
+  f_body_part: 'Body part', f_equipment: 'Equipment', f_target: 'Target muscle',
+  f_muscle_group: 'Muscle group', f_secondary: 'Secondary muscle',
+  results: (n, t) => `${n} of ${t} exercises`,
+  clear: 'Clear filters', remove: 'Remove filter',
+  no_results_t: 'No exercises match these filters',
+  no_results_b: 'Every exercise is excluded by at least one active filter or the search text.',
+  no_sel_t: 'No exercise selected',
+  no_sel_b: 'Pick one from the list to see its media, mapping and instructions.',
+  media_missing: path => `File not found at ${path}. Is the dataset cloned next to this repo?`,
+  thumb: 'Thumbnail 180×180', anim: 'Animation GIF 180×180',
+  sec_mapping: 'Mapping', sec_instructions: 'Instructions', sec_related: 'Related exercises',
+  lang: 'Language',
+  stored_para: 'Also stored as one paragraph:',
+  rel_same: 'Same target, same equipment', rel_other: 'Same target, other equipment',
+  rel_none: 'No other exercise shares this target and equipment.',
+  note_mg: 'Always repeated as the first secondary muscle.',
+  note_target: t => `Belongs only to body part “${t}”.`,
+  filter_by: (f, v) => `Filter by ${f}: ${v}`,
+  missing_data: 'data.js was not found',
+  missing_data_b: 'Run the build script from the repo root, then reload this page:',
+};
+Object.assign(STR, {
+  xm_close: 'Close', xm_source: 'Dataset name', xm_equipment: 'Equipment', xm_label: 'Unparsed words',
+  credit_media: 'Exercise images and animations © Gym visual —', credit_data: 'exercise data (MIT) from',
+  x_loading: 'Loading…', x_loading_b: host => `Reading exercises, variations, muscles and equipment from ${host}.`,
+  x_not_connected: 'Not connected', x_read_error: 'Could not read the catalog',
+  x_muscles: 'Muscles', x_legend: 'P = primary · S = secondary',
+  x_none_selected: 'Nothing selected — every exercise is included. Click a row to select it as primary; inside the selection, Any or Secondary changes the role.',
+  x_selected: (name, mode) => `Selected: ${name} (${mode}).`, x_clear: 'Clear selection',
+  x_any: 'Any', x_primary: 'Primary', x_secondary: 'Secondary', x_not_muscles: 'Not muscles',
+  x_inside: 'selection inside', x_no_data: 'No exercise reaches this yet', x_select_row: 'Select (primary)',
+  x_back_any: 'Back to any role', x_back_default: 'Back to primary', x_select_row_any: 'Select (nothing has it as primary, so any role)',
+  x_rank_p: n => `${n} as primary`, x_rank_s: n => `${n} only as secondary`, x_expand: 'Show what is inside', x_collapse: 'Collapse',
+  x_equipment: 'Equipment', x_eq_on: 'showing variations that need only what is ticked', x_eq_off: 'nothing ticked — no equipment filter',
+  x_eq_disabled: 'No matching variation uses this', x_eq_clear: 'Clear equipment',
+  x_count: (v, e) => `${v} variations in ${e} exercises`, x_variations: 'variations',
+  x_none_t: 'No variation fits', x_none_eq: 'Some exercises match the muscle, but none can be done with only the ticked equipment. Tick more equipment or clear it.',
+  x_none_m: 'No variation reaches the selected muscle in that role. Many individual muscles have no data yet — try the group above it.',
+  x_role_p: n => `Primary: ${n}`, x_role_s: n => `Secondary: ${n}`, x_unparsed: 'Words the parser could not map',
+  type_strength: 'strength', type_stretch: 'stretch', type_mobility: 'mobility', type_cardio: 'cardio',
+});
+const STR_ES = {
+  app_title: 'Explorador de ejercicios',
+  lens_browse: 'Dataset', lens_exercises: 'Ejercicios', lens_taxonomy: 'Taxonomía', lens_mapping: 'Relaciones', lens_quality: 'Calidad', lens_schema: 'Esquema',
+  theme_to_light: 'Tema claro', theme_to_dark: 'Tema oscuro',
+  stats: (n, l) => `${n} ejercicios · ${l} idiomas`,
+  xm_close: 'Cerrar', xm_source: 'Nombre en el dataset', xm_equipment: 'Equipamiento', xm_label: 'Palabras sin clasificar',
+  sec_instructions: 'Instrucciones', lang: 'Idioma', anim: 'Animación GIF 180×180', thumb: 'Miniatura 180×180',
+  credit_media: 'Imágenes y animaciones de ejercicios © Gym visual —', credit_data: 'datos de ejercicios (MIT) de',
+  x_loading: 'Cargando…', x_loading_b: host => `Leyendo ejercicios, variantes, músculos y equipamiento de ${host}.`,
+  x_not_connected: 'Sin conexión', x_read_error: 'No se pudo leer el catálogo',
+  x_muscles: 'Músculos', x_legend: 'P = principal · S = secundario',
+  x_none_selected: 'Nada seleccionado: se incluyen todos los ejercicios. Haz clic en una fila para seleccionarla como principal; dentro de la selección, Cualquiera o Secundario cambian el rol.',
+  x_selected: (name, mode) => `Seleccionado: ${name} (${mode}).`, x_clear: 'Quitar selección',
+  x_any: 'Cualquiera', x_primary: 'Principal', x_secondary: 'Secundario', x_not_muscles: 'No son músculos',
+  x_inside: 'selección dentro', x_no_data: 'Ningún ejercicio llega aquí todavía', x_select_row: 'Seleccionar (principal)',
+  x_back_any: 'Volver a cualquier rol', x_back_default: 'Volver a principal', x_select_row_any: 'Seleccionar (nada lo tiene como principal: cualquier rol)',
+  x_rank_p: n => `${n} como principal`, x_rank_s: n => `${n} solo como secundario`, x_expand: 'Mostrar el contenido', x_collapse: 'Contraer',
+  x_equipment: 'Equipamiento', x_eq_on: 'variantes que solo necesitan lo marcado', x_eq_off: 'nada marcado: sin filtro de equipamiento',
+  x_eq_disabled: 'Ninguna variante que coincide lo usa', x_eq_clear: 'Quitar equipamiento',
+  x_count: (v, e) => `${v} variantes en ${e} ejercicios`, x_variations: 'variantes',
+  x_none_t: 'Ninguna variante encaja', x_none_eq: 'Hay ejercicios para el músculo, pero ninguno se puede hacer solo con el equipamiento marcado. Marca más o quita el filtro.',
+  x_none_m: 'Ninguna variante trabaja el músculo seleccionado con ese rol. Muchos músculos individuales aún no tienen datos: prueba con el grupo superior.',
+  x_role_p: n => `Principal: ${n}`, x_role_s: n => `Secundario: ${n}`, x_unparsed: 'Palabras que el analizador no pudo clasificar',
+  type_strength: 'fuerza', type_stretch: 'estiramiento', type_mobility: 'movilidad', type_cardio: 'cardio',
+};
+let UI_LANG = 'en';
+const s = (k, ...a) => { const v = (UI_LANG === 'es' && k in STR_ES) ? STR_ES[k] : STR[k]; return typeof v === 'function' ? v(...a) : (v ?? k); };
+// Catalog names are {en, es}; fall back to English where a translation is missing.
+const nm = o => (o && (o[UI_LANG] || o.en)) || '';
+
+const D = window.EXPLORER_DATA;
+if (!D) {
+  document.getElementById('main').innerHTML = `<div class="fatal"><h2>${s('missing_data')}</h2><p>${s('missing_data_b')}</p><pre class="mono">python3 tools/exercise-explorer/build.py</pre></div>`;
+  throw new Error('data.js missing');
+}
+const EX = D.exercises;
+const BYID = new Map(EX.map(e => [e.id, e]));
+const media = p => (D.gifRoot && p.startsWith('videos/')) ? `${D.gifRoot}/${p}` : `${D.mediaRoot}/${p}`;
+const esc = v => String(v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const LANGS = Object.keys(EX[0].instruction_steps);          // languages present in this copy of the data
+const SRC_LANGS = D.sourceLangs || LANGS;                     // languages in the source dataset
+const LANG_NAMES = {en:'English',es:'Spanish',it:'Italian',tr:'Turkish',ru:'Russian',zh:'Chinese',hi:'Hindi',pl:'Polish',ko:'Korean',fr:'French'};
+// Locales the React Native app ships (src/i18n/*.json).
+const APP_LOCALES = ['de','en','es','fr','hi','id','it','ja','ko','ms','pl','ru','th','tr','vi','zh'];
+
+// Facets: field kind → how to read its values from a record.
+const FACETS = [
+  {key:'body_part', get:e => [e.body_part]},
+  {key:'target', get:e => [e.target]},
+  {key:'equipment', get:e => [e.equipment]},
+  {key:'muscle_group', get:e => [e.muscle_group]},
+  {key:'secondary', get:e => e.secondary_muscles},
+];
+const FACET = Object.fromEntries(FACETS.map(f => [f.key, f]));
+const pill = (kind, value, asButton = true) => asButton
+  ? `<button class="pill k-${kind}" type="button" data-filter="${kind}" data-value="${esc(value)}" title="${esc(s('filter_by', s('f_' + kind), value))}">${esc(value)}</button>`
+  : `<span class="pill k-${kind}">${esc(value)}</span>`;
+
+// ---- State ----
+const state = {lens:'browse', q:'', filters:{}, sel:null, lang:'en', open:{body_part:true,target:false,equipment:true,muscle_group:false,secondary:false}};
+const store = {
+  get(k){ try { return localStorage.getItem('exx.' + k); } catch { return null; } },
+  set(k, v){ try { localStorage.setItem('exx.' + k, v); } catch {} },
+};
+
+// ---- Chrome ----
+const LENSES = ['exercises','taxonomy','mapping','quality','schema','browse'];
+const lensNav = document.getElementById('lens');
+function paintChrome(){
+  document.documentElement.lang = UI_LANG;
+  document.querySelectorAll('[data-s]').forEach(el => el.textContent = s(el.dataset.s));
+  document.getElementById('stats').textContent = s('stats', EX.length, SRC_LANGS.length);
+  lensNav.innerHTML = LENSES.map(l => `<button type="button" role="tab" data-lens="${l}" aria-selected="${state.lens === l}">${s('lens_' + l)}</button>`).join('');
+  document.querySelectorAll('[data-ui-lang]').forEach(b => b.setAttribute('aria-pressed', b.dataset.uiLang === UI_LANG));
+  document.getElementById('theme').textContent = s(document.body.classList.contains('gl-light') ? 'theme_to_dark' : 'theme_to_light');
+}
+function setUiLang(l){
+  UI_LANG = l; store.set('ui_lang', l);
+  paintChrome();
+  if (LANGS.includes(l)) { state.lang = l; store.set('lang', l); }
+  renderBrowse();
+  if (XS.status === 'ready') { drawExTree(); drawExResults(); }
+  if (TX.status === 'ready') { drawTaxTree(); drawTaxDetail(); }
+}
+document.getElementById('langsw').addEventListener('click', e => { const b = e.target.closest('[data-ui-lang]'); if (b && b.dataset.uiLang !== UI_LANG) setUiLang(b.dataset.uiLang); });
+UI_LANG = store.get('ui_lang') === 'es' ? 'es' : 'en';
+paintChrome();
+lensNav.addEventListener('click', e => { const b = e.target.closest('[data-lens]'); if (b) setLens(b.dataset.lens); });
+function setLens(l){
+  state.lens = l;
+  lensNav.querySelectorAll('button').forEach(b => b.setAttribute('aria-selected', b.dataset.lens === l));
+  LENSES.forEach(x => document.getElementById('view-' + x).classList.toggle('on', x === l));
+  if (l !== 'browse' && !rendered[l]) { RENDER[l](); rendered[l] = true; }
+}
+const themeBtn = document.getElementById('theme');
+function setTheme(t){
+  document.body.classList.toggle('gl-light', t === 'light');
+  themeBtn.textContent = s(t === 'light' ? 'theme_to_dark' : 'theme_to_light');
+  store.set('theme', t);
+}
+themeBtn.onclick = () => setTheme(document.body.classList.contains('gl-light') ? 'dark' : 'light');
+setTheme(store.get('theme') === 'light' ? 'light' : 'dark');
+
+// ---- Drag handles: the operator sets the pane ratio ----
+const panes = document.getElementById('panes');
+['w1','w2','w3','w4'].forEach(k => { const v = store.get(k); if (v) ({w3: document.getElementById('panes2'), w4: document.getElementById('panes4')}[k] || panes).style.setProperty('--' + k, v + 'px'); });
+document.querySelectorAll('.handle').forEach(h => h.addEventListener('pointerdown', ev => {
+  const col = h.dataset.col, host = h.parentElement, prev = h.previousElementSibling, start = ev.clientX, w0 = prev.getBoundingClientRect().width;
+  h.classList.add('drag'); h.setPointerCapture(ev.pointerId);
+  const move = e => { const w = Math.max(180, Math.min(700, w0 + e.clientX - start)); host.style.setProperty('--w' + col, w + 'px'); store.set('w' + col, Math.round(w)); };
+  const up = () => { h.classList.remove('drag'); h.removeEventListener('pointermove', move); h.removeEventListener('pointerup', up); };
+  h.addEventListener('pointermove', move); h.addEventListener('pointerup', up);
+}));
+
+// ---- Browse: filtering ----
+function matches(e, skip){
+  for (const [k, v] of Object.entries(state.filters)) {
+    if (k === skip) continue;
+    if (!FACET[k].get(e).includes(v)) return false;
+  }
+  if (state.q) {
+    const q = state.q.toLowerCase();
+    const hay = [e.name, e.id, e.body_part, e.target, e.equipment, e.muscle_group, ...e.secondary_muscles].join(' ').toLowerCase();
+    if (!hay.includes(q)) return false;
+  }
+  return true;
+}
+function setFilter(kind, value){
+  if (state.filters[kind] === value) delete state.filters[kind]; else state.filters[kind] = value;
+  state.open[kind] = true;
+  renderBrowse();
+}
+function openInBrowse(filters, sel){
+  state.filters = {...filters}; state.q = '';
+  if (sel) state.sel = sel;
+  Object.keys(filters).forEach(k => state.open[k] = true);
+  setLens('browse'); renderBrowse();
+}
+
+const filtersEl = document.getElementById('filters');
+filtersEl.innerHTML = `<input class="search" id="q" type="search" placeholder="${esc(s('search'))}"><div id="facets"></div>`;
+const qEl = document.getElementById('q');
+qEl.addEventListener('input', () => { state.q = qEl.value.trim(); renderBrowse(); });
+
+function renderFacets(){
+  document.getElementById('facets').innerHTML = FACETS.map(f => {
+    // Counts reflect every other active filter, so a value shows how many results picking it would give.
+    const counts = new Map(), all = new Set();
+    for (const e of EX) {
+      f.get(e).forEach(v => all.add(v));
+      if (matches(e, f.key)) f.get(e).forEach(v => counts.set(v, (counts.get(v) || 0) + 1));
+    }
+    const vals = [...all].sort((a, b) => (counts.get(b) || 0) - (counts.get(a) || 0) || a.localeCompare(b));
+    const opts = vals.map(v => {
+      const n = counts.get(v) || 0, on = state.filters[f.key] === v;
+      return `<button class="opt" type="button" data-filter="${f.key}" data-value="${esc(v)}" aria-pressed="${on}" ${!n && !on ? 'disabled' : ''}><span>${esc(v)}</span><span class="n">${n}</span></button>`;
+    }).join('');
+    return `<details class="facet" data-facet="${f.key}" ${state.open[f.key] ? 'open' : ''}><summary><span class="swatch" style="background:var(--k-${f.key})"></span><span class="facet-title">${s('f_' + f.key)}</span><span class="n mono" style="margin-left:auto;font-size:11px;color:var(--gl-text-tertiary)">${all.size}</span></summary>${opts}</details>`;
+  }).join('');
+}
+document.getElementById('facets').addEventListener('toggle', e => { if (e.target.dataset.facet) state.open[e.target.dataset.facet] = e.target.open; }, true);
+
+const listEl = document.getElementById('list');
+function renderList(){
+  const res = EX.filter(e => matches(e));
+  const act = Object.entries(state.filters);
+  const chips = act.map(([k, v]) => `<button class="pill k-${k}" type="button" data-filter="${k}" data-value="${esc(v)}" title="${esc(s('remove'))}">${esc(s('f_' + k))}: ${esc(v)} <span aria-hidden="true">×</span></button>`).join('');
+  const head = `<div class="listhead"><div style="display:flex;align-items:center;gap:10px"><span class="count">${s('results', res.length, EX.length)}</span>${act.length || state.q ? `<button class="btn" type="button" id="clear" style="margin-left:auto;padding:2px 10px;font-size:12px">${s('clear')}</button>` : ''}</div>${chips ? `<div class="active">${chips}</div>` : ''}</div>`;
+  if (!res.length) {
+    listEl.innerHTML = head + `<div class="empty"><strong>${s('no_results_t')}</strong>${s('no_results_b')}</div>`;
+  } else {
+    listEl.innerHTML = head + res.map(e => `<button class="row" type="button" data-id="${e.id}" aria-current="${e.id === state.sel}"><img class="thumb" loading="lazy" alt="" src="${esc(media(e.image))}"><span><span class="name">${esc(e.name)}</span><span class="sub"><span class="pill k-body_part">${esc(e.body_part)}</span><span class="pill k-target">${esc(e.target)}</span><span class="pill k-equipment">${esc(e.equipment)}</span></span></span></button>`).join('');
+  }
+  const c = document.getElementById('clear');
+  if (c) c.onclick = () => { state.filters = {}; state.q = ''; qEl.value = ''; renderBrowse(); };
+}
+listEl.addEventListener('click', e => {
+  const r = e.target.closest('.row'); if (r) { state.sel = r.dataset.id; renderList(); renderDetail(); }
+});
+
+// ---- Browse: detail ----
+const detailEl = document.getElementById('detail');
+function mediaFig(path, cap){
+  return `<figure><img alt="" src="${esc(media(path))}" onerror="this.outerHTML='<div class=&quot;missing&quot;>${esc(esc(s('media_missing', path)))}</div>'"><figcaption>${cap}</figcaption></figure>`;
+}
+function renderDetail(){
+  const e = BYID.get(state.sel);
+  if (!e) { detailEl.innerHTML = `<div class="empty"><strong>${s('no_sel_t')}</strong>${s('no_sel_b')}</div>`; return; }
+  const sameT = EX.filter(x => x.id !== e.id && x.target === e.target);
+  const same = sameT.filter(x => x.equipment === e.equipment), other = sameT.filter(x => x.equipment !== e.equipment);
+  const relCards = arr => `<div class="related">${arr.slice(0, 24).map(x => `<button class="rel" type="button" data-id="${x.id}"><img loading="lazy" alt="" src="${esc(media(x.image))}"><span>${esc(x.name)}${x.equipment !== e.equipment ? `<br><span class="pill k-equipment" style="margin-top:3px">${esc(x.equipment)}</span>` : ''}</span></button>`).join('')}</div>${arr.length > 24 ? `<p class="credit">+${arr.length - 24} more — filter by target to see all.</p>` : ''}`;
+  const lang = LANGS.includes(state.lang) ? state.lang : 'en';
+  detailEl.innerHTML = `<div class="detail">
+    <div class="hero">
+      <div class="media">${mediaFig(e.gif_url, s('anim'))}${mediaFig(e.image, s('thumb'))}</div>
+      <div style="flex:1;min-width:220px"><h1>${esc(e.name)}</h1><div class="credit">${esc(e.attribution)}</div></div>
+    </div>
+    <div class="card"><h3 class="card-title">${s('sec_mapping')}</h3>
+      <dl class="kv">
+        <dt>body_part</dt><dd>${pill('body_part', e.body_part)}</dd>
+        <dt>target</dt><dd>${pill('target', e.target)}<span class="note">${esc(s('note_target', e.body_part))}</span></dd>
+        <dt>muscle_group</dt><dd>${pill('muscle_group', e.muscle_group)}<span class="note">${s('note_mg')}</span></dd>
+        <dt>secondary_muscles</dt><dd>${e.secondary_muscles.map(m => pill('secondary', m)).join('')}</dd>
+        <dt>equipment</dt><dd>${pill('equipment', e.equipment)}</dd>
+      </dl>
+    </div>
+    <div class="card"><h3 class="card-title">${s('sec_instructions')}<span class="tools"><label>${s('lang')} <select id="lang">${LANGS.map(l => `<option value="${l}" ${l === lang ? 'selected' : ''}>${LANG_NAMES[l] || l} (${l})</option>`).join('')}</select></label></span></h3>
+      <ol class="steps">${e.instruction_steps[lang].map(t => `<li>${esc(t)}</li>`).join('')}</ol>
+      <div class="para">${s('stored_para')} ${esc(e.instructions[lang])}</div>
+    </div>
+    <div class="card"><h3 class="card-title">${s('sec_related')}</h3>
+      <dl class="kv">
+        <dt>${s('rel_same')}</dt><dd style="display:block">${same.length ? relCards(same) : `<span class="credit">${s('rel_none')}</span>`}</dd>
+        <dt>${s('rel_other')}</dt><dd style="display:block">${other.length ? relCards(other) : `<span class="credit">—</span>`}</dd>
+      </dl>
+    </div>
+    <div class="meta"><span><b>id</b> ${e.id}</span><span><b>media_id</b> ${esc(e.media_id)}</span><span><b>image</b> ${esc(e.image)}</span><span><b>gif_url</b> ${esc(e.gif_url)}</span><span><b>category</b> ${esc(e.category)}</span><span><b>created_at</b> ${esc(e.created_at)}</span></div>
+  </div>`;
+  document.getElementById('lang').onchange = ev => { state.lang = ev.target.value; store.set('lang', state.lang); renderDetail(); };
+  detailEl.scrollTop = 0;
+}
+detailEl.addEventListener('click', ev => {
+  const r = ev.target.closest('.rel'); if (r) { state.sel = r.dataset.id; renderList(); renderDetail(); }
+});
+// Any pill or facet option carrying data-filter toggles that filter, wherever it sits.
+document.getElementById('view-browse').addEventListener('click', ev => {
+  const b = ev.target.closest('[data-filter]'); if (b && !b.disabled) setFilter(b.dataset.filter, b.dataset.value);
+});
+function renderBrowse(){ renderFacets(); renderList(); renderDetail(); }
+
+// ---- Shared computations ----
+const countBy = (arr, fn) => { const m = new Map(); arr.forEach(x => [].concat(fn(x)).forEach(v => m.set(v, (m.get(v) || 0) + 1))); return m; };
+const sortDesc = m => [...m.entries()].sort((a, b) => b[1] - a[1] || String(a[0]).localeCompare(b[0]));
+
+// ---- Mapping lens ----
+function renderMapping(){
+  const el = document.getElementById('mapping');
+  const targetParents = new Map(); EX.forEach(e => { if (!targetParents.has(e.target)) targetParents.set(e.target, new Set()); targetParents.get(e.target).add(e.body_part); });
+  const strictTree = [...targetParents.values()].every(p => p.size === 1);
+  const catEq = EX.filter(e => e.category === e.body_part).length;
+  const mgFirst = EX.filter(e => e.secondary_muscles[0] === e.muscle_group).length;
+  const stepsAligned = EX.filter(e => new Set(LANGS.map(l => e.instruction_steps[l].length)).size === 1).length;
+  const facts = [
+    [strictTree ? '1:N' : 'N:N', strictTree ? `Every target muscle belongs to exactly one body part, so <b>body_part → target</b> is a strict hierarchy (${targetParents.size} targets under ${countBy(EX, e => e.body_part).size} body parts).` : 'Some target muscles appear under more than one body part.'],
+    ['N:N', `<b>muscle_group</b> and <b>secondary_muscles</b> cut across that hierarchy: the same muscle turns up under many targets and body parts.`],
+    ['=', `<b>muscle_group</b> is the first entry of <b>secondary_muscles</b> in ${mgFirst} of ${EX.length} records — it is a “primary synergist”, not a separate list.`],
+    ['=', `<b>category</b> equals <b>body_part</b> in ${catEq} of ${EX.length} records — one of them is redundant.`],
+    ['N:N', `<b>equipment</b> is independent of anatomy: one value per exercise, ${countBy(EX, e => e.equipment).size} values in total.`],
+    ['1:1', `Each exercise has exactly one thumbnail and one GIF, both named <span class="mono">{id}-{media_id}</span>. Instruction steps line up across all ${LANGS.length} languages in ${stepsAligned} of ${EX.length} records.`],
+  ];
+  const bodyParts = sortDesc(countBy(EX, e => e.body_part));
+  const equip = sortDesc(countBy(EX, e => e.equipment)).map(x => x[0]);
+  const grid = new Map(); EX.forEach(e => { const k = e.body_part + '|' + e.equipment; grid.set(k, (grid.get(k) || 0) + 1); });
+  const max = Math.max(...grid.values());
+  el.innerHTML = `
+    <h2>How the metadata maps</h2>
+    <p class="lede">Anatomy is a hierarchy with a cross-cutting layer; equipment sits beside it. Every count and label below is computed from the data when the page loads. Click any value to open those exercises in Browse.</p>
+    <div class="card"><h3 class="card-title">Relationships found in the data</h3>${facts.map(([k, t]) => `<div class="fact"><span class="ok">${k}</span><div>${t}</div></div>`).join('')}</div>
+    <div class="card"><h3 class="card-title">Body part → target → muscle group</h3><div class="tree" id="tree"></div></div>
+    <div class="card"><h3 class="card-title">Body part × equipment</h3><div class="scroll-x"><table class="matrix"><thead><tr><th></th>${equip.map(q => `<th scope="col">${esc(q)}</th>`).join('')}</tr></thead><tbody>${bodyParts.map(([bp]) => `<tr><th scope="row">${esc(bp)}</th>${equip.map(q => { const n = grid.get(bp + '|' + q) || 0; return `<td>${n ? `<button class="cell" type="button" style="--v:${(0.15 + 0.85 * n / max).toFixed(2)}" data-open='${esc(JSON.stringify({body_part: bp, equipment: q}))}' title="${esc(bp)} · ${esc(q)}: ${n}">${n}</button>` : `<span class="cell zero" style="display:inline-flex;align-items:center;justify-content:center">·</span>`}</td>`; }).join('')}</tr>`).join('')}</tbody></table></div></div>`;
+  renderTree();
+  el.addEventListener('click', ev => {
+    const o = ev.target.closest('[data-open]'); if (o) openInBrowse(JSON.parse(o.dataset.open));
+    const x = ev.target.closest('[data-exp]'); if (x) { const k = x.dataset.exp; treeOpen.has(k) ? treeOpen.delete(k) : treeOpen.add(k); renderTree(); }
+  });
+}
+const treeOpen = new Set();
+function renderTree(){
+  // Expanding reveals one level only.
+  const node = (key, kind, value, n, filters, hasKids) => `<div class="node">${hasKids ? `<button class="exp" type="button" data-exp="${esc(key)}" aria-expanded="${treeOpen.has(key)}">${treeOpen.has(key) ? '−' : '+'}</button>` : '<span class="exp-spacer"></span>'}<span><button class="pill k-${kind}" type="button" data-open='${esc(JSON.stringify(filters))}'>${esc(value)}</button></span><span class="n">${n}</span></div>`;
+  const html = sortDesc(countBy(EX, e => e.body_part)).map(([bp, n]) => {
+    const k1 = 'bp:' + bp, sub1 = EX.filter(e => e.body_part === bp);
+    let kids = '';
+    if (treeOpen.has(k1)) kids = `<div class="kids">${sortDesc(countBy(sub1, e => e.target)).map(([t, n2]) => {
+      const k2 = k1 + '/t:' + t, sub2 = sub1.filter(e => e.target === t);
+      const kids2 = treeOpen.has(k2) ? `<div class="kids">${sortDesc(countBy(sub2, e => e.muscle_group)).map(([m, n3]) => node('', 'muscle_group', m, n3, {body_part: bp, target: t, muscle_group: m}, false)).join('')}</div>` : '';
+      return node(k2, 'target', t, n2, {body_part: bp, target: t}, true) + kids2;
+    }).join('')}</div>`;
+    return node(k1, 'body_part', bp, n, {body_part: bp}, true) + kids;
+  }).join('');
+  document.getElementById('tree').innerHTML = html;
+}
+
+// ---- Quality lens ----
+function renderQuality(){
+  const el = document.getElementById('quality');
+  const SYN = [['traps','trapezius'],['lats','latissimus dorsi'],['delts','deltoids'],['abs','abdominals'],['quads','quadriceps'],['band','resistance band'],['roller','wheel roller'],['barbell','olympic barbell']];
+  const fieldVals = {target: countBy(EX, e => e.target), muscle_group: countBy(EX, e => e.muscle_group), secondary: countBy(EX, e => e.secondary_muscles), equipment: countBy(EX, e => e.equipment)};
+  const synRows = SYN.map(group => {
+    const hits = [];
+    for (const [f, m] of Object.entries(fieldVals)) group.forEach(v => { if (m.has(v)) hits.push([f, v, m.get(v)]); });
+    return {group, hits};
+  }).filter(r => new Set(r.hits.map(h => h[1])).size > 1);
+  const names = new Map(); EX.forEach(e => { const k = e.name.toLowerCase(); names.set(k, [...(names.get(k) || []), e]); });
+  const dups = [...names.entries()].filter(([, v]) => v.length > 1);
+  const missingLocales = APP_LOCALES.filter(l => !SRC_LANGS.includes(l));
+  const singletons = sortDesc(fieldVals.secondary).filter(([, n]) => n === 1);
+  const issues = [
+    {name: 'Same muscle, different names', line: `${synRows.length} groups of values that mean the same thing are stored under different spellings, so a filter on one misses the other.`,
+      body: synRows.map(r => `<div class="issue-row"><div>${r.group.join(' = ')}</div><div>${r.hits.map(([f, v, n]) => `<button class="pill k-${f}" type="button" data-open='${esc(JSON.stringify({[f]: v}))}'>${esc(v)} · ${n}</button>`).join('')}</div></div>`).join(''), n: synRows.length},
+    {name: 'Duplicate exercise names', line: `${dups.length} names are used by two different ids. The id is unique, so this is safe to import, but the list shows the same name twice.`,
+      body: dups.map(([nm, v]) => `<div class="issue-row"><div style="white-space:normal;text-transform:capitalize">${esc(nm)}</div><div>${v.map(e => `<button class="pill" type="button" data-sel="${e.id}">#${e.id} · ${esc(e.equipment)}</button>`).join('')}</div></div>`).join(''), n: dups.length},
+    {name: 'Languages the app has but the dataset lacks', line: `The app ships ${APP_LOCALES.length} locales; exercise text exists in ${SRC_LANGS.length}. Users of the other ${missingLocales.length} would see English.`,
+      body: `<div class="issue-row"><div>Missing</div><div>${missingLocales.map(l => `<span class="pill">${l}</span>`).join('')}</div></div><div class="issue-row"><div>Present</div><div>${SRC_LANGS.map(l => `<span class="pill">${l}</span>`).join('')}</div></div>`, n: missingLocales.length},
+    {name: 'Redundant fields', line: 'Two fields repeat information stored elsewhere in the same record.',
+      body: `<div class="issue-row"><div>category</div><div>Identical to body_part in ${EX.filter(e => e.category === e.body_part).length} of ${EX.length} records.</div></div><div class="issue-row"><div>muscle_group</div><div>Always the first entry of secondary_muscles (${EX.filter(e => e.secondary_muscles[0] === e.muscle_group).length} of ${EX.length}).</div></div>`, n: 2},
+    {name: 'Secondary muscles used only once', line: `${singletons.length} secondary-muscle values appear on a single exercise — likely spelling variants of a broader muscle.`,
+      body: `<div class="issue-row"><div>Values</div><div>${singletons.map(([v]) => `<button class="pill k-secondary" type="button" data-open='${esc(JSON.stringify({secondary: v}))}'>${esc(v)}</button>`).join('')}</div></div>`, n: singletons.length},
+  ];
+  el.innerHTML = `<h2>Data quality</h2><p class="lede">Things to decide before this becomes a database table. Nothing here blocks an import; each one affects how filters and translations behave in the app.</p>` +
+    issues.map(i => `<details class="issue"><summary><span class="pill flag">${i.n}</span><span><div class="issue-name">${i.name}</div><div class="issue-line">${i.line}</div></span><span class="mono" style="color:var(--gl-text-tertiary)">+</span></summary><div class="issue-body">${i.body}</div></details>`).join('');
+  el.addEventListener('click', ev => {
+    const o = ev.target.closest('[data-open]'); if (o) openInBrowse(JSON.parse(o.dataset.open));
+    const sl = ev.target.closest('[data-sel]'); if (sl) openInBrowse({}, sl.dataset.sel);
+  });
+}
+
+// ---- Schema lens ----
+function renderSchema(){
+  const el = document.getElementById('schema');
+  const d = f => countBy(EX, f).size;
+  const rows = [
+    ['id', 'string', `${EX.length} unique`, EX[0].id, '<code>id text primary key</code>'],
+    ['name', 'string', `${d(e => e.name.toLowerCase())} distinct`, EX[0].name, '<code>name text not null</code>'],
+    ['body_part', 'enum string', `${d(e => e.body_part)} values`, EX[0].body_part, '<code>body_part text</code> → lookup table'],
+    ['category', 'string', 'copy of body_part', EX[0].category, 'Drop (redundant)'],
+    ['target', 'string', `${d(e => e.target)} values`, EX[0].target, '<code>target text</code> → lookup table, child of body_part'],
+    ['equipment', 'string', `${d(e => e.equipment)} values`, EX[0].equipment, '<code>equipment text</code> → lookup table'],
+    ['muscle_group', 'string', `${d(e => e.muscle_group)} values`, EX[0].muscle_group, '<code>muscle_group text</code>'],
+    ['secondary_muscles', 'string[]', `${d(e => e.secondary_muscles)} values`, JSON.stringify(EX[0].secondary_muscles), '<code>secondary_muscles text[]</code> (GIN index for filtering)'],
+    ['instructions', '{lang: string}', `${SRC_LANGS.length} languages`, '{"en": "Lie flat…", …}', '<code>instructions jsonb</code>'],
+    ['instruction_steps', '{lang: string[]}', `${SRC_LANGS.length} languages`, '{"en": ["Lie flat…", …], …}', '<code>instruction_steps jsonb</code>'],
+    ['media_id', 'string', `${d(e => e.media_id)} unique`, EX[0].media_id, '<code>media_id text</code>'],
+    ['image', 'path', '180×180 JPEG', EX[0].image, '<code>image_path text</code> → storage bucket, once media is licensed'],
+    ['gif_url', 'path', '180×180 GIF', EX[0].gif_url, '<code>gif_path text</code> → storage bucket, once media is licensed'],
+    ['attribution', 'string', `${d(e => e.attribution)} value`, EX[0].attribution, '<code>attribution text</code> — must be shown with the media'],
+    ['created_at', 'timestamp', `${d(e => e.created_at.slice(0, 10))} date`, EX[0].created_at, 'Keep as <code>source_created_at</code>'],
+  ];
+  el.innerHTML = `<h2>Record schema</h2><p class="lede">Each field in <span class="mono">data/exercises.json</span>, what the data actually contains, and the column it would become in the Supabase <span class="mono">exercises</span> table.</p>
+    <div class="card"><div class="scroll-x"><table class="schema"><thead><tr><th>Field</th><th>Type</th><th>In the data</th><th>Example</th><th>Proposed column</th></tr></thead><tbody>${rows.map(r => `<tr><td class="f">${r[0]}</td><td class="t">${esc(r[1])}</td><td>${esc(r[2])}</td><td><code>${esc(r[3])}</code></td><td>${r[4]}</td></tr>`).join('')}</tbody></table></div></div>
+    <p class="credit" style="margin-top:16px">Source: <span class="mono">${esc(D.source)}</span>. Text and structure MIT; media © Gym visual, not covered by that licence.</p>`;
+}
+
+// ---- Taxonomy lens: live from Supabase ----
+const TX = {status: 'idle', open: new Set(), sel: null, role: 'all', via: 'all'};
+async function sbFetchAll(table, select, order){
+  const {url, key} = D.supabase || {};
+  const rows = [];
+  for (let from = 0; ; from += 1000) {
+    const r = await fetch(`${url}/rest/v1/${table}?select=${encodeURIComponent(select)}${order ? '&order=' + order : ''}`,
+      {headers: {apikey: key, Authorization: `Bearer ${key}`, Range: `${from}-${from + 999}`, 'Range-Unit': 'items'}});
+    if (!r.ok) throw new Error(`${table}: HTTP ${r.status} ${await r.text()}`);
+    const page = await r.json(); rows.push(...page);
+    if (page.length < 1000) return rows;
+  }
+}
+async function renderTaxonomy(){
+  const tree = document.getElementById('taxtree'), det = document.getElementById('taxdetail');
+  if (!D.supabase || !D.supabase.url || !D.supabase.key) {
+    tree.innerHTML = `<div class="state error"><strong>Not connected</strong>No Supabase URL or key in <span class="mono">.env</span>. Add them, then run <span class="mono">python3 tools/exercise-explorer/build.py</span> and reload.</div>`;
+    det.innerHTML = ''; return;
+  }
+  tree.innerHTML = `<div class="state"><strong>Loading taxonomy…</strong>Reading muscles and ${'9,000+'} exercise links from ${esc(new URL(D.supabase.url).host)}.</div>`;
+  det.innerHTML = '';
+  try {
+    const [muscles, counts, sets, members, aliases, index] = await Promise.all([
+      sbFetchAll('muscles', 'id,level,kind,parent_id,sort_order,names,common_names', 'sort_order'),
+      sbFetchAll('muscle_exercise_counts', 'muscle_id,as_target,as_secondary,tagged_directly,total'),
+      sbFetchAll('muscle_sets', 'id,names'),
+      sbFetchAll('muscle_set_members', 'set_id,muscle_id'),
+      sbFetchAll('muscle_aliases', 'term,muscle_id,set_id,confidence,note'),
+      sbFetchAll('exercise_muscle_index', 'exercise_id:variant_id,muscle_id,role,via,distance'),
+    ]);
+    Object.assign(TX, {status: 'ready', muscles, sets, members, aliases,
+      byId: new Map(muscles.map(m => [m.id, m])),
+      counts: new Map(counts.map(c => [c.muscle_id, c])),
+      kids: muscles.reduce((m, x) => { const p = x.parent_id || ''; (m[p] = m[p] || []).push(x); return m; }, {}),
+      index: index.reduce((m, r) => { (m[r.muscle_id] = m[r.muscle_id] || []).push(r); return m; }, {}),
+    });
+    drawTaxTree(); drawTaxDetail();
+  } catch (err) {
+    tree.innerHTML = `<div class="state error"><strong>Could not read the taxonomy</strong>${esc(err.message)}</div>`;
+  }
+}
+function drawTaxTree(){
+  const el = document.getElementById('taxtree');
+  const node = m => {
+    const c = TX.counts.get(m.id) || {total: 0}, kids = TX.kids[m.id] || [], open = TX.open.has(m.id);
+    const row = `<div class="node">${kids.length ? `<button class="exp" type="button" data-texp="${m.id}" aria-expanded="${open}">${open ? '−' : '+'}</button>` : '<span class="exp-spacer"></span>'}
+      <button class="tnode ${c.total ? '' : 'zero'}" type="button" data-tsel="${m.id}" aria-current="${TX.sel === m.id}"><span>${esc(nm(m.names))}</span><span class="lv">${m.kind === 'muscle' ? m.level : m.kind}</span></button>
+      <span class="counts" title="exercises as target · as secondary"><b>${c.as_target || 0}</b>T <b>${c.as_secondary || 0}</b>S</span></div>`;
+    return row + (open && kids.length ? `<div class="kids">${kids.map(node).join('')}</div>` : '');
+  };
+  const roots = TX.kids[''] || [];
+  el.innerHTML = `<div class="card-title" style="margin-bottom:8px">Anatomy <span class="tools counts">T = target · S = secondary</span></div>` +
+    roots.filter(m => m.kind === 'muscle').map(node).join('') +
+    `<div class="card-title" style="margin:18px 0 8px">Not muscles</div>` + roots.filter(m => m.kind !== 'muscle').map(node).join('');
+}
+function drawTaxDetail(){
+  const el = document.getElementById('taxdetail');
+  const m = TX.byId && TX.byId.get(TX.sel);
+  if (!m) { el.innerHTML = `<div class="empty"><strong>No muscle selected</strong>Pick a node in the tree to see its names, the dataset terms mapped to it, and every exercise that reaches it.</div>`; return; }
+  const path = []; for (let p = m; p; p = TX.byId.get(p.parent_id)) path.unshift(p);
+  const aliases = TX.aliases.filter(a => a.muscle_id === m.id);
+  const inSets = TX.members.filter(x => x.muscle_id === m.id).map(x => TX.sets.find(s2 => s2.id === x.set_id));
+  const setAliases = TX.aliases.filter(a => inSets.some(s2 => s2 && s2.id === a.set_id));
+  const all = (TX.index[m.id] || []);
+  const rows = all.filter(r => (TX.role === 'all' || r.role === TX.role) && (TX.via === 'all' || r.via === TX.via))
+    .sort((a, b) => (a.role > b.role) - (a.role < b.role) || (a.via > b.via) - (a.via < b.via) || BYID.get(a.exercise_id)?.name.localeCompare(BYID.get(b.exercise_id)?.name));
+  const n = f => all.filter(f).length;
+  const seg = (key, opts) => `<span class="seg">${opts.map(([v, label]) => `<button type="button" data-tseg="${key}" data-v="${v}" aria-pressed="${TX[key] === v}">${label}</button>`).join('')}</span>`;
+  el.innerHTML = `<div class="detail">
+    <div class="credit">${path.map(p => esc(nm(p.names))).join(' › ')}</div>
+    <h1 style="text-transform:none;margin-top:6px">${esc(nm(m.names))}</h1>
+    <div class="card"><h3 class="card-title">Names</h3><dl class="kv">
+      <dt>en</dt><dd>${esc(nm(m.names))}${m.common_names ? ` <span class="credit">(${esc(m.common_names.en)})</span>` : ''}</dd>
+      <dt>es</dt><dd>${esc(m.names.es || '—')}${m.common_names ? ` <span class="credit">(${esc(m.common_names.es)})</span>` : ''}</dd>
+      <dt>level · kind</dt><dd>${m.level} · ${m.kind}</dd>
+      <dt>id</dt><dd class="mono">${m.id}</dd></dl></div>
+    <div class="card"><h3 class="card-title">Dataset terms that land here</h3><dl class="kv">
+      <dt>Mapped directly</dt><dd>${aliases.length ? aliases.map(a => `<span class="pill" title="${esc(a.note || '')}">${esc(a.term)} · ${a.confidence}</span>`).join('') : '<span class="credit">None — exercises reach this node only through a child or a set.</span>'}</dd>
+      <dt>Member of sets</dt><dd>${inSets.length ? inSets.map(s2 => `<span class="pill k-secondary">${esc(nm(s2.names))}</span>`).join('') + (setAliases.length ? `<span class="note">Via terms: ${setAliases.map(a => esc(a.term)).join(', ')}</span>` : '') : '<span class="credit">None</span>'}</dd>
+    </dl></div>
+    <div class="card"><h3 class="card-title">Exercises reaching this node <span class="tools counts">${all.length} total</span></h3>
+      <div class="taxhead">${seg('role', [['all', 'All'], ['target', `Target · ${n(r => r.role === 'target')}`], ['secondary', `Secondary · ${n(r => r.role === 'secondary')}`]])}
+        ${seg('via', [['all', 'Any link'], ['direct', `Direct · ${n(r => r.via === 'direct')}`], ['set', `Via set · ${n(r => r.via === 'set')}`], ['rollup', `From a child · ${n(r => r.via === 'rollup')}`]])}</div>
+      ${rows.length ? rows.map(r => { const e = BYID.get(r.exercise_id); if (!e) return ''; return `<button class="exrow" type="button" data-topen="${e.id}"><img loading="lazy" alt="" src="${esc(media(e.image))}"><span class="nm">${esc(e.name)}</span><span class="tags"><span class="pill role-${r.role}">${r.role}</span><span class="pill via-${r.via}">${r.via === 'rollup' ? 'from child' : r.via === 'set' ? 'via set' : 'direct'}</span></span></button>`; }).join('')
+        : `<div class="credit" style="padding:12px 0">${all.length ? 'No exercises match this role and link filter.' : 'No exercise in the dataset reaches this muscle yet. It exists so the tree is complete.'}</div>`}
+    </div></div>`;
+  el.scrollTop = 0;
+}
+document.getElementById('view-taxonomy').addEventListener('click', ev => {
+  const x = ev.target.closest('[data-texp]'); if (x) { const k = x.dataset.texp; TX.open.has(k) ? TX.open.delete(k) : TX.open.add(k); drawTaxTree(); return; }
+  const sl = ev.target.closest('[data-tsel]'); if (sl) { TX.sel = sl.dataset.tsel; if ((TX.kids[TX.sel] || []).length) TX.open.add(TX.sel); drawTaxTree(); drawTaxDetail(); return; }
+  const sg = ev.target.closest('[data-tseg]'); if (sg) { TX[sg.dataset.tseg] = sg.dataset.v; drawTaxDetail(); return; }
+  const o = ev.target.closest('[data-topen]'); if (o) openInBrowse({}, o.dataset.topen);
+});
+
+// ---- Exercises lens: two filters — one muscle node (any / primary / secondary) and equipment (live) ----
+// One node is selected at a time, as Primary by default (Any / Secondary on request). A variation matches when
+// it reaches that node (tagged with it or with anything below it) in the chosen role. Results list exercises
+// that have the node as primary first, then those that only have it as secondary. It matches the equipment filter when every item it needs is
+// ticked (no ticks = no equipment filter). Duplicates are left out.
+const XS = {status: 'idle', open: new Set(), sel: null, mode: 'any', have: new Set(), openEx: new Set()};
+async function renderExercises(){
+  const tree = document.getElementById('exlist');
+  if (!D.supabase || !D.supabase.url || !D.supabase.key) {
+    tree.innerHTML = `<div class="state error"><strong>${s('x_not_connected')}</strong><span class="mono">.env</span> → SUPABASE_URL / SUPABASE_ANON_KEY, <span class="mono">python3 tools/exercise-explorer/build.py</span></div>`;
+    return;
+  }
+  tree.innerHTML = `<div class="state"><strong>${s('x_loading')}</strong>${esc(s('x_loading_b', new URL(D.supabase.url).host))}</div>`;
+  try {
+    const [exercises, variants, veq, equipment, muscles, paths, aliases, setMembers, facts, vattrs, vdims, vvals] = await Promise.all([
+      sbFetchAll('exercises', 'id,type,names,is_canonical,sort_order', 'sort_order'),
+      sbFetchAll('exercise_variants', 'id,exercise_id,names,variant_label,duplicate_of,source_target,image_path'),
+      sbFetchAll('variant_equipment', 'variant_id,equipment_id'),
+      sbFetchAll('equipment', 'id,names,sort_order', 'sort_order'),
+      sbFetchAll('muscles', 'id,names,parent_id,level,kind,sort_order', 'sort_order'),
+      sbFetchAll('muscle_paths', 'ancestor_id,descendant_id'),
+      sbFetchAll('muscle_aliases', 'term,muscle_id,set_id'),
+      sbFetchAll('muscle_set_members', 'set_id,muscle_id'),
+      sbFetchAll('exercise_muscles', 'variant_id,role,source_term'),
+      sbFetchAll('variant_attributes', 'variant_id,dimension_id,value'),
+      sbFetchAll('variation_dimensions', 'id,names,sort_order', 'sort_order'),
+      sbFetchAll('variation_values', 'dimension_id,value,names,sort_order', 'sort_order'),
+    ]);
+    const live = variants.filter(v => !v.duplicate_of);
+    const liveIds = new Set(live.map(v => v.id));
+    const ancestors = paths.reduce((m, p) => { (m[p.descendant_id] = m[p.descendant_id] || []).push(p.ancestor_id); return m; }, {});
+    const alias = new Map(aliases.map(a => [a.term, a]));
+    const members = setMembers.reduce((m, r) => { (m[r.set_id] = m[r.set_id] || []).push(r.muscle_id); return m; }, {});
+    // Per variation: every node it reaches, primary and secondary kept apart (a node can be both).
+    const reach = {};
+    for (const f of facts) {
+      if (!liveIds.has(f.variant_id)) continue;
+      const a = alias.get(f.source_term); if (!a) continue;
+      const nodes = a.muscle_id ? [a.muscle_id] : (members[a.set_id] || []);
+      const r = reach[f.variant_id] = reach[f.variant_id] || {primary: new Set(), secondary: new Set()};
+      const bucket = f.role === 'target' ? r.primary : r.secondary;
+      nodes.forEach(n => (ancestors[n] || [n]).forEach(x => bucket.add(x)));
+    }
+    const eqBy = veq.reduce((m, r) => { (m[r.variant_id] = m[r.variant_id] || []).push(r.equipment_id); return m; }, {});
+    const counts = {};
+    live.forEach(v => { const r = reach[v.id]; if (!r) return;
+      r.primary.forEach(n => { (counts[n] = counts[n] || {p: 0, s: 0}).p++; });
+      r.secondary.forEach(n => { (counts[n] = counts[n] || {p: 0, s: 0}).s++; }); });
+    Object.assign(XS, {status: 'ready', live, reach, eqBy, counts, equipment, facts, alias, vdims,
+      vById: new Map(variants.map(v => [v.id, v])),
+      eqById: new Map(equipment.map(e => [e.id, e])),
+      attrsBy: vattrs.reduce((m, r) => { (m[r.variant_id] = m[r.variant_id] || []).push(r); return m; }, {}),
+      valName: new Map(vvals.map(v => [v.dimension_id + '=' + v.value, v])),
+      exById: new Map(exercises.map(e => [e.id, e])),
+      mById: new Map(muscles.map(m => [m.id, m])),
+      kids: muscles.reduce((m, x) => { (m[x.parent_id || ''] = m[x.parent_id || ''] || []).push(x); return m; }, {}),
+    });
+    drawExTree(); drawExResults();
+  } catch (err) {
+    tree.innerHTML = `<div class="state error"><strong>${s('x_read_error')}</strong>${esc(err.message)}</div>`;
+  }
+}
+// Selecting a row means "exercises for this muscle": primary, unless nothing has it as primary.
+function defaultMode(id){ return (XS.counts[id] || {}).p ? 'primary' : 'any'; }
+function isInside(id, target){ for (let m = XS.mById.get(target); m; m = XS.mById.get(m.parent_id)) if (m.parent_id === id) return true; return false; }
+function drawExTree(){
+  // Each node appears once. "+" opens one level. Clicking the row selects the node (any role) and replaces
+  // any previous selection; the selected row becomes one outlined block whose Primary / Secondary buttons
+  // narrow the role. Clicking the selected row again clears it.
+  const el = document.getElementById('exlist');
+  const rows = [];
+  const walk = (m, depth, out) => {
+    const c = XS.counts[m.id] || {p: 0, s: 0}, empty = !c.p && !c.s, on = XS.sel === m.id;
+    const kids = XS.kids[m.id] || [], open = XS.open.has(m.id);
+    const hides = !open && XS.sel && isInside(m.id, XS.sel);
+    const n = k => k === 'any' ? c.p + c.s : c.s;
+    const ps = k => `<button class="xps" type="button" data-xmode="${k}" data-node="${m.id}" aria-pressed="${on && XS.mode === k}" ${n(k) ? '' : 'disabled'} title="${on && XS.mode === k ? s('x_back_default') : s('x_' + k)}">${s('x_' + k)}</button>`;
+    out.push(`<div class="xrow d${Math.min(depth, 3)} ${empty ? 'zero' : ''}">
+      ${kids.length ? `<button class="exp" type="button" data-xexp="${m.id}" aria-expanded="${open}" title="${open ? s('x_collapse') : s('x_expand')}">${open ? '−' : '+'}</button>` : '<span class="exp-spacer"></span>'}
+      <div class="xblock ${on ? 'on' : ''}">
+        <button class="xany" type="button" data-xsel="${m.id}" aria-pressed="${on}" ${empty ? 'disabled' : ''} title="${empty ? s('x_no_data') : s(c.p ? 'x_select_row' : 'x_select_row_any')}">
+          <span class="xnm">${esc(nm(m.names))}</span>
+          ${on ? `<span class="xmode">${s('x_' + XS.mode)}</span>` : ''}
+          ${hides ? `<span class="xmode">${s('x_inside')}</span>` : ''}
+          <span class="counts"><b>${c.p}</b>P <b>${c.s}</b>S</span>
+        </button>
+        ${ps('any')}${ps('secondary')}
+      </div>
+    </div>`);
+    if (open) kids.forEach(k => walk(k, depth + 1, out));
+  };
+  const roots = XS.kids[''] || [], other = [];
+  roots.filter(m => m.kind === 'muscle').forEach(m => walk(m, 0, rows));
+  roots.filter(m => m.kind !== 'muscle').forEach(m => walk(m, 0, other));
+  const selName = XS.sel ? nm(XS.mById.get(XS.sel).names) : '';
+  el.innerHTML = `<div class="card-title" style="margin-bottom:6px">${s('x_muscles')} <span class="tools counts">${s('x_legend')}</span></div>
+    <p class="credit" style="margin:0 0 10px">${XS.sel ? esc(s('x_selected', selName, s('x_' + XS.mode))) + ` <button class="btn" type="button" data-xclear-muscles style="padding:1px 10px;font-size:12px;margin-left:6px">${s('x_clear')}</button>` : s('x_none_selected')}</p>
+    <div class="xflat">${rows.join('')}<div class="card-title" style="margin:18px 0 6px">${s('x_not_muscles')}</div>${other.join('')}</div>`;
+}
+function exMatchesMuscles(v){
+  if (!XS.sel) return true;
+  const r = XS.reach[v.id]; if (!r) return false;
+  return (XS.mode !== 'secondary' && r.primary.has(XS.sel)) || (XS.mode !== 'primary' && r.secondary.has(XS.sel));
+}
+function drawExResults(){
+  const el = document.getElementById('exdetail');
+  const byMuscle = XS.live.filter(exMatchesMuscles);
+  // Every equipment item stays listed; items no matching variation uses are disabled.
+  const eqCount = {};
+  byMuscle.forEach(v => (XS.eqBy[v.id] || []).forEach(e => { eqCount[e] = (eqCount[e] || 0) + 1; }));
+  [...XS.have].forEach(e => { if (!eqCount[e]) XS.have.delete(e); });
+  const shown = byMuscle.filter(v => !XS.have.size || (XS.eqBy[v.id] || []).every(e => XS.have.has(e)));
+  const byEx = {};
+  shown.forEach(v => (byEx[v.exercise_id] = byEx[v.exercise_id] || []).push(v));
+  const isPrim = v => !!(XS.sel && XS.reach[v.id]?.primary.has(XS.sel));
+  const hasPrim = {};
+  Object.entries(byEx).forEach(([id, vs]) => { vs.sort((a, b) => isPrim(b) - isPrim(a)); hasPrim[id] = vs.some(isPrim); });
+  const exIds = Object.keys(byEx).sort((a, b) => (hasPrim[b] - hasPrim[a]) || byEx[b].length - byEx[a].length || nm(XS.exById.get(a).names).localeCompare(nm(XS.exById.get(b).names)));
+  const splitAt = XS.sel ? exIds.findIndex(id => !hasPrim[id]) : -1;
+  const selName = XS.sel ? esc(nm(XS.mById.get(XS.sel).names)) : '';
+  const roleTags = v => {
+    const r = XS.reach[v.id]; if (!r || !XS.sel) return '';
+    return (r.primary.has(XS.sel) ? `<span class="pill role-target">${s('x_role_p', selName)}</span>` : '') +
+           (r.secondary.has(XS.sel) ? `<span class="pill role-secondary">${s('x_role_s', selName)}</span>` : '');
+  };
+  const card = (x, v) => {
+    const exName = nm(x.names), full = nm(v.names);
+    const short = full.startsWith(exName) ? full.slice(exName.length).replace(/^ · /, '').replace(/^ — /, '') : full;
+    return `<button class="vcard" type="button" data-xopen="${v.id}" title="${esc(full)}">
+      <img loading="lazy" alt="" src="${esc(media(v.image_path))}">
+      <span><span class="vn">${esc(short || exName)}</span><span class="vp">${roleTags(v)}
+        ${v.variant_label ? `<span class="pill flag-label" title="${s('x_unparsed')}">${esc(v.variant_label)}</span>` : ''}</span></span></button>`;
+  };
+  el.innerHTML = `<div class="xeqbar">
+      <div class="card-title" style="margin:0 0 8px">${s('x_equipment')} <span class="tools counts">${XS.have.size ? s('x_eq_on') : s('x_eq_off')}</span></div>
+      <div class="opt-row">${XS.equipment.map(e => { const n = eqCount[e.id] || 0; return `<label class="xcheck ${n ? '' : 'off'}" title="${n ? '' : s('x_eq_disabled')}"><input type="checkbox" data-xhave="${e.id}" ${XS.have.has(e.id) ? 'checked' : ''} ${n ? '' : 'disabled'}> ${esc(nm(e.names))} <span class="n">${n}</span></label>`; }).join('')}
+      ${XS.have.size ? `<button class="btn" type="button" data-xclear-eq style="padding:1px 10px;font-size:12px">${s('x_eq_clear')}</button>` : ''}</div>
+      <div class="count" style="margin-top:10px">${s('x_count', shown.length, exIds.length)}</div>
+    </div>
+    <div class="detail" style="max-width:none;padding-top:8px">
+    ${exIds.length ? exIds.map((id, i) => { const x = XS.exById.get(id); return (XS.sel && i === 0 && hasPrim[id] ? `<h3 class="vgroup-title xrank">${s('x_rank_p', selName)}</h3>` : '') + (i === splitAt ? `<h3 class="vgroup-title xrank">${s('x_rank_s', selName)}</h3>` : '') + `<details class="issue" data-xex="${id}" ${XS.openEx.has(id) ? 'open' : ''}>
+        <summary><span class="pill ${x.type === 'strength' ? 'k-eq' : 'k-dim'}">${s('type_' + x.type)}</span><span><div class="issue-name">${esc(nm(x.names))}</div><div class="issue-line">${esc(UI_LANG === 'es' ? x.names.en : (x.names.es || ''))}</div></span><span class="counts"><b>${byEx[id].length}</b> ${s('x_variations')}</span></summary>
+        <div class="issue-body"><div class="vgrid">${XS.openEx.has(id) ? byEx[id].map(v => card(x, v)).join('') : ''}</div></div></details>`; }).join('')
+      : `<div class="state" style="padding:24px 0"><strong>${s('x_none_t')}</strong>${byMuscle.length ? s('x_none_eq') : s('x_none_m')}</div>`}
+    </div>`;
+}
+document.getElementById('view-exercises').addEventListener('click', ev => {
+  const x = ev.target.closest('[data-xexp]'); if (x) { const k = x.dataset.xexp; XS.open.has(k) ? XS.open.delete(k) : XS.open.add(k); drawExTree(); return; }
+  const r = ev.target.closest('[data-xsel]');
+  if (r && !r.disabled) { const id = r.dataset.xsel; if (XS.sel === id) XS.sel = null; else { XS.sel = id; XS.mode = defaultMode(id); } drawExTree(); drawExResults(); return; }
+  const m = ev.target.closest('[data-xmode]');
+  if (m && !m.disabled) { const id = m.dataset.node, k = m.dataset.xmode;
+    if (XS.sel === id) XS.mode = XS.mode === k ? defaultMode(id) : k; else { XS.sel = id; XS.mode = k; }
+    drawExTree(); drawExResults(); return; }
+  if (ev.target.closest('[data-xclear-muscles]')) { XS.sel = null; drawExTree(); drawExResults(); return; }
+  if (ev.target.closest('[data-xclear-eq]')) { XS.have.clear(); drawExResults(); return; }
+  const o = ev.target.closest('[data-xopen]'); if (o) openVariantDialog(o.dataset.xopen);
+});
+document.getElementById('view-exercises').addEventListener('change', ev => {
+  const c = ev.target.closest('[data-xhave]'); if (!c) return;
+  c.checked ? XS.have.add(c.dataset.xhave) : XS.have.delete(c.dataset.xhave); drawExResults();
+});
+// Variation dialog: the variation in full, without leaving the Exercises tab. Its labels are plain text,
+// not the Browse filter pills, because nothing here filters.
+const xmodal = document.getElementById('xmodal');
+let xmodalLang = null;
+function openVariantDialog(id){
+  const v = XS.vById.get(id), rec = BYID.get(id);
+  if (!v || !rec) return;
+  const x = XS.exById.get(v.exercise_id);
+  const lang = LANGS.includes(xmodalLang) ? xmodalLang : (LANGS.includes(UI_LANG) ? UI_LANG : 'en');
+  const attrs = (XS.attrsBy[id] || []).slice().sort((a, b) => XS.vdims.findIndex(d => d.id === a.dimension_id) - XS.vdims.findIndex(d => d.id === b.dimension_id));
+  const dimName = d => nm(XS.vdims.find(r => r.id === d)?.names) || d;
+  const roleRows = XS.facts.filter(f => f.variant_id === id).map(f => {
+    const a = XS.alias.get(f.source_term), node = a && a.muscle_id ? XS.mById.get(a.muscle_id) : null;
+    return {role: f.role, label: node ? nm(node.names) : f.source_term};
+  });
+  const primary = roleRows.filter(r => r.role === 'target'), secondary = roleRows.filter(r => r.role === 'secondary');
+  const span = (cls, text) => `<span class="pill ${cls}">${esc(text)}</span>`;
+  xmodal.innerHTML = `<div class="xmodal-head">
+      <div><div class="credit">${esc(nm(x?.names))} · ${s('type_' + (x?.type || 'strength'))}</div>
+      <h2 id="xmodal-title">${esc(nm(v.names))}</h2>
+      <div class="credit">${s('xm_source')}: ${esc(rec.name)} · #${rec.id}</div></div>
+      <button class="btn" type="button" data-xclose>${s('xm_close')}</button>
+    </div>
+    <div class="xmodal-body">
+      <div class="hero">
+        <div class="media">${mediaFig(rec.gif_url, s('anim'))}${mediaFig(rec.image, s('thumb'))}</div>
+        <dl class="kv" style="flex:1;min-width:260px">
+          <dt>${s('xm_equipment')}</dt><dd>${(XS.eqBy[id] || []).map(e => span('k-eq', nm(XS.eqById.get(e)?.names))).join('') || '—'}</dd>
+          ${attrs.map(a => `<dt>${esc(dimName(a.dimension_id))}</dt><dd>${span('k-dim', nm(XS.valName.get(a.dimension_id + '=' + a.value)?.names) || a.value)}</dd>`).join('')}
+          ${v.variant_label ? `<dt>${s('xm_label')}</dt><dd>${span('flag-label', v.variant_label)}</dd>` : ''}
+          <dt>${s('x_primary')}</dt><dd>${primary.map(r => span('role-target', r.label)).join('') || '—'}</dd>
+          <dt>${s('x_secondary')}</dt><dd>${secondary.map(r => span('role-secondary', r.label)).join('') || '—'}</dd>
+        </dl>
+      </div>
+      <div class="card"><h3 class="card-title">${s('sec_instructions')}<span class="tools"><label>${s('lang')} <select id="xmodal-lang">${LANGS.map(l => `<option value="${l}" ${l === lang ? 'selected' : ''}>${LANG_NAMES[l] || l} (${l})</option>`).join('')}</select></label></span></h3>
+        <ol class="steps">${rec.instruction_steps[lang].map(st => `<li>${esc(st)}</li>`).join('')}</ol>
+      </div>
+      <div class="credit" style="margin-top:14px">${esc(rec.attribution)}</div>
+    </div>`;
+  document.getElementById('xmodal-lang').onchange = ev => { xmodalLang = ev.target.value; openVariantDialog(id); };
+  if (!xmodal.open) xmodal.showModal();
+}
+xmodal.addEventListener('click', ev => {
+  if (ev.target.closest('[data-xclose]')) { xmodal.close(); return; }
+  if (ev.target === xmodal) xmodal.close();   // click on the backdrop
+});
+
+// Variation cards render only when an exercise is opened, so a broad selection stays fast.
+document.getElementById('view-exercises').addEventListener('toggle', ev => {
+  const d = ev.target.closest && ev.target.closest('[data-xex]'); if (!d || ev.target !== d) return;
+  const id = d.dataset.xex, was = XS.openEx.has(id);
+  d.open ? XS.openEx.add(id) : XS.openEx.delete(id);
+  if (d.open && !was) drawExResults();
+}, true);
+
+const RENDER = {exercises: renderExercises, taxonomy: renderTaxonomy, mapping: renderMapping, quality: renderQuality, schema: renderSchema};
+const rendered = {};
+state.lang = store.get('lang') || 'en';
+renderBrowse();
+setLens('exercises');
+</script>
+</body>
+</html>

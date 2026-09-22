@@ -84,10 +84,9 @@ const LeaderboardProfileScreen: React.FC<LeaderboardProfileScreenProps> = ({ nav
       }
 
       // Profil bilgilerini al
+      // Other users' profiles are private; this RPC returns only their public fields.
       const { data: profileData, error: profileError } = await supabase
-        .from('profiles')
-        .select('bio, instagram, twitter, linkedin, website, skill_level')
-        .eq('id', route.params.userId)
+        .rpc('get_public_profile', { p_user_id: route.params.userId })
         .maybeSingle();
 
       if (profileError) {

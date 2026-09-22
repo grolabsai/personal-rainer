@@ -89,3 +89,7 @@ package-lock.json
 # Firebase config (use .example as template)
 ios/GoogleService-Info.plist
 android/app/google-services.json
+
+# Exercise Explorer build output (generated from exercises-dataset)
+tools/exercise-explorer/data.js
+tools/exercise-explorer/dist/

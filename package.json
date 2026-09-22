@@ -21,7 +21,7 @@
     "@reduxjs/toolkit": "^2.8.2",
     "@supabase/supabase-js": "^2.50.0",
     "i18next": "^25.3.2",
-    "lottie-react-native": "^7.2.2",
+    "lottie-react-native": "~7.2.2",
     "react": "19.1.0",
     "react-i18next": "^15.6.0",
     "react-native": "0.80.0",
