@@ -92,3 +92,35 @@ select public.rebuild_exercise_alternatives();      -- level 3 substitutes
   cannot hide real data.
 - **Level 1 and 2 substitutes don't need any of this.** They come from the exercise plus its attributes.
   Only level 3 ("similar exercise") depends on the patterns above — see [substitutions.md](substitutions.md).
+
+## Stabilisers: a third role, and a degree
+
+A muscle's relationship to an exercise always carried a role — target or secondary — so stabilisers
+are a **value, not a new concept**: `role in (target, secondary, stabiliser)`. A push-up trains the
+chest and triceps while the core holds the line; on rings the core holds a great deal more.
+
+The dataset states no stabilisers at all, so every one of them is **inferred** by the emphasis rules
+and the ladder labels it as such. Rules could only be triggered by an attribute; they can now also
+be triggered by **equipment**, which is where most stabilisation comes from — rings, straps, a
+stability ball, a kettlebell's offset load, a bar you hang from. Two rules carry no muscle at all,
+only the sentence: a Smith machine and a lever machine hold the path, *so the stabilisers do less*.
+
+**Is there a primary and a secondary stabiliser?** There is a difference, but it is one of degree,
+not of kind — and the same question applies to every role ("incline works the front delt *more*").
+So instead of doubling the role vocabulary, each muscle row carries `emphasis`:
+
+| `emphasis` | Means |
+|---|---|
+| `-1` | does less here than it usually would |
+| `0` | as usual |
+| `+1` | notably more here |
+
+A stabiliser row only exists where something makes stabilisation worth naming, so a floor push-up
+has none and a ring dip has one; `+1` is for the cases that are harder again — an unstable base, or
+a weight held overhead. `role` answers *what kind of work*, `emphasis` answers *how much*, and the
+two compose without multiplying.
+
+Load position — a back squat versus a goblet, overhead or hanging carry — is the same idea, and it
+is the next thing to model. It waits on the catalog: the dataset has no goblet, Zercher or suitcase
+variations to attach it to, and a vocabulary with no variations behind it would only make the
+resolver fail.

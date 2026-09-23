@@ -140,7 +140,7 @@ export type SessionRow = {
 
 // Redundant rows are the same claim less precisely ("chest" beside "upper chest"): the athlete
 // sees the precise one, so they are left in the database and out of these screens.
-const MUSCLE_ROWS = 'variant_id, muscle_id, role, detail_level, notes, muscle:muscles(names, common_names)';
+const MUSCLE_ROWS = 'variant_id, muscle_id, role, emphasis, detail_level, notes, muscle:muscles(names, common_names)';
 
 // The exercise detail screen: what this variation is, what it works, and what can replace it.
 // The substitutes come from the database (levels 1-3, see docs/substitutions.md); only the picture

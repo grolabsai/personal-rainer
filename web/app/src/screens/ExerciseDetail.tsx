@@ -13,9 +13,10 @@ import { Failed, Loading } from '../components/Status';
 const muscleName = (row: MuscleRow | undefined, nm: (n: Names) => string) =>
   row ? (nm(row.muscle?.common_names) || nm(row.muscle?.names)) : '';
 
-// Secondary first, primary last: a muscle in both lists should read as primary.
+// Weakest role first, strongest last: a muscle claimed twice should read as the strongest claim.
 const statesOf = (rows: MuscleRow[]): States => Object.fromEntries([
-  ...rows.filter(r => r.role !== 'target').map(r => [r.muscle_id, 'secondary'] as const),
+  ...rows.filter(r => r.role === 'stabiliser').map(r => [r.muscle_id, 'stabiliser'] as const),
+  ...rows.filter(r => r.role === 'secondary').map(r => [r.muscle_id, 'secondary'] as const),
   ...rows.filter(r => r.role === 'target').map(r => [r.muscle_id, 'primary'] as const),
 ]);
 
@@ -44,7 +45,7 @@ export function ExerciseDetail({ id, itemId, onSwap, swapped }: {
   const planned = statesOf(data.muscles);
   const mName = (mid: string, rows: MuscleRow[]) => muscleName(rows.find(r => r.muscle_id === mid), nm) || mid;
 
-  const byRole = (role: 'target' | 'secondary') => data.muscles
+  const byRole = (role: MuscleRow['role']) => data.muscles
     .filter(m => m.role === role).map(m => muscleName(m, nm) || m.muscle_id).join(', ');
   // Rules that made the data more precise explain themselves in the athlete's language.
   const inferred = data.muscles.filter(m => m.detail_level === 'inferred' && m.notes).map(m => nm(m.notes));
@@ -83,6 +84,7 @@ export function ExerciseDetail({ id, itemId, onSwap, swapped }: {
       <div className="maplegend">
         {byRole('target') && <span><i className="sw primary" />{t('primary_m')}: {byRole('target')}</span>}
         {byRole('secondary') && <span><i className="sw secondary" />{t('secondary_m')}: {byRole('secondary')}</span>}
+        {byRole('stabiliser') && <span><i className="sw stabiliser" />{t('stabiliser_m')}: {byRole('stabiliser')}</span>}
       </div>
       {!!inferred.length && (
         <div className="changes">

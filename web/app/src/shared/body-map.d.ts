@@ -1,5 +1,5 @@
 // Types for body-map.js, so the TypeScript app can use the same module as the mock pages.
-export type MuscleState = 'primary' | 'secondary' | 'added' | 'dropped' | '' | null | undefined;
+export type MuscleState = 'primary' | 'secondary' | 'stabiliser' | 'added' | 'dropped' | '' | null | undefined;
 export type BodyView = 'front' | 'back';
 export declare function bodyMap(opts: {
   states?: Record<string, MuscleState>;

@@ -88,7 +88,8 @@ export type ActiveSession = {
 // (docs/patterns-and-emphasis.md): stated -> inferred -> exercise -> generalised.
 export type MuscleRow = {
   muscle_id: string;
-  role: 'target' | 'secondary';
+  role: 'target' | 'secondary' | 'stabiliser';
+  emphasis: number;          // -1 less than usual · 0 as usual · +1 notably more here
   detail_level: 'stated' | 'inferred' | 'exercise' | 'generalised';
   notes: Names | null;
   muscle: { names: Names; common_names: Names } | null;

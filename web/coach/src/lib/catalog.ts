@@ -7,7 +7,7 @@ import type { Names } from './i18n';
 export type ExerciseCard = {
   exercise_id: string; names: Names; type: string; movement_pattern: string | null;
   region: string | null; muscle_group: string | null; is_canonical: boolean;
-  variant_id: string; image_path: string; variations: number;
+  variant_id: string; image_path: string; gif_path: string; variations: number;
 };
 
 export type VariationOption = { dimension_id: string; value: string; variants: number };
@@ -23,7 +23,7 @@ let cards: Promise<ExerciseCard[]> | null = null;
 export function loadExerciseCards(): Promise<ExerciseCard[]> {
   cards ??= (async () => {
     const { data, error } = await supabase.from('exercise_display')
-      .select('exercise_id, names, type, movement_pattern, region, muscle_group, is_canonical, variant_id, image_path, variations')
+      .select('exercise_id, names, type, movement_pattern, region, muscle_group, is_canonical, variant_id, image_path, gif_path, variations')
       .order('is_canonical', { ascending: false });
     if (error) throw error;
     return data as unknown as ExerciseCard[];

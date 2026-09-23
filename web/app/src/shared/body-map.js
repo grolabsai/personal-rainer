@@ -2,7 +2,8 @@
 // The shapes come from web/shared/body-paths.js (MIT, see that file's header).
 //
 // One component, many uses: pass a map of muscle id -> state and style the states in CSS
-// (.is-primary, .is-secondary today; add / removed / sore / weak later without touching this file).
+// (.is-primary, .is-secondary, .is-stabiliser today; add / removed / sore / weak later without
+// touching this file).
 import { PATHS, VIEWBOX } from './body-paths.js';
 
 // Our muscle ids (from the `muscles` table) -> the drawing's part names.
@@ -114,6 +115,7 @@ export const BODY_MAP_CSS = `
 .bodyfig .muscle{fill:var(--gl-surface-hover);stroke:var(--gl-border-strong)}
 .bodyfig .muscle.is-primary{fill:var(--gl-probe-homepage);stroke:var(--gl-probe-homepage);stroke-width:1.2}
 .bodyfig .muscle.is-secondary{fill:color-mix(in srgb,var(--gl-probe-site-wide) 50%,transparent);stroke:var(--gl-probe-site-wide)}
+.bodyfig .muscle.is-stabiliser{fill:color-mix(in srgb,var(--gl-probe-pdp) 22%,transparent);stroke:var(--gl-probe-pdp);stroke-dasharray:4 3}
 .bodyfig .muscle.is-added{fill:color-mix(in srgb,var(--gl-success) 55%,transparent);stroke:var(--gl-success)}
 .bodyfig .muscle.is-dropped{fill:none;stroke:var(--gl-danger);stroke-dasharray:6 4}
 `;

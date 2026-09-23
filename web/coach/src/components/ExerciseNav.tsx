@@ -3,6 +3,7 @@ import { loadEquipment, loadEquipmentByExercise, loadExerciseCards, loadRegions,
 import { useI18n } from '../lib/i18n';
 import { mediaUrl } from '../lib/media';
 import { useLoad } from '../lib/useLoad';
+import { HoverPreview, type Preview } from './HoverPreview';
 import { Icon } from './Icon';
 import { Loading } from './Status';
 
@@ -24,6 +25,10 @@ export function ExerciseNav({ onPick }: { onPick: (card: ExerciseCard) => void }
   const [region, setRegion] = useState('');
   const [type, setType] = useState('');
   const [equipment, setEquipment] = useState('');
+  // Collapsed groups keep the list tall; a closed one still shows what is chosen inside it.
+  const [open, setOpen] = useState<Record<string, boolean>>({ region: true, type: false, equipment: false });
+  const toggle = (k: string) => setOpen(o => ({ ...o, [k]: !o[k] }));
+  const [preview, setPreview] = useState<Preview>(null);
 
   const kitOf = (id: string) => data?.byExercise.get(id) ?? [];
 
@@ -61,9 +66,25 @@ export function ExerciseNav({ onPick }: { onPick: (card: ExerciseCard) => void }
 
   if (loading && !data) return <Loading />;
 
-  const group = (label: string, children: React.ReactNode) => (
-    <div className="filtergroup"><span className="filterlabel">{label}</span><div className="chips">{children}</div></div>
+  const group = (key: string, label: string, chosen: React.ReactNode, children: React.ReactNode) => (
+    <div className="filtergroup">
+      <button className="filterhead" type="button" onClick={() => toggle(key)} aria-expanded={!!open[key]}>
+        <span className="filterlabel">{label}</span>
+        {!open[key] && chosen}
+        <span className="chev">{open[key] ? '▴' : '▾'}</span>
+      </button>
+      {open[key] && <div className="chips">{children}</div>}
+    </div>
   );
+
+  // What a closed group is hiding: the choice made in it, or nothing at all.
+  const chosenChip = (icon: string, label: string | undefined, clear: () => void) => label
+    ? <span className="chosen"><Icon name={icon} size={13} />{label}
+        <span className="clear" role="button" tabIndex={0} aria-label={t('cancel')}
+          onClick={e => { e.stopPropagation(); clear(); }}
+          onKeyDown={e => { if (e.key === 'Enter') { e.stopPropagation(); clear(); } }}>×</span>
+      </span>
+    : <span className="chosen none">{t('all_of_them')}</span>;
 
   return (
     <aside className="exnav">
@@ -72,7 +93,9 @@ export function ExerciseNav({ onPick }: { onPick: (card: ExerciseCard) => void }
         <input className="input" placeholder={t('search_exercises')} value={term} onChange={e => setTerm(e.target.value)} />
       </label>
 
-      {group(t('f_body_part'), (data!.regions).filter(r => regionCounts.get(r.id)).map(r => (
+      {group('region', t('f_body_part'),
+        chosenChip(`region:${region}`, region ? nm(data!.regions.find(r => r.id === region)?.names) : undefined, () => setRegion('')),
+        (data!.regions).filter(r => regionCounts.get(r.id)).map(r => (
         <button key={r.id} className="chip" type="button" aria-pressed={region === r.id}
           onClick={() => { setRegion(region === r.id ? '' : r.id); setEquipment(''); }}>
           <Icon name={`region:${r.id}`} />{nm(r.names)}
@@ -80,7 +103,9 @@ export function ExerciseNav({ onPick }: { onPick: (card: ExerciseCard) => void }
         </button>
       )))}
 
-      {group(t('f_kind'), TYPES.filter(ty => typeCounts.get(ty)).map(ty => (
+      {group('type', t('f_kind'),
+        chosenChip(`type:${type}`, type ? t(`extype_${type}` as 'extype_strength') : undefined, () => setType('')),
+        TYPES.filter(ty => typeCounts.get(ty)).map(ty => (
         <button key={ty} className="chip" type="button" aria-pressed={type === ty}
           onClick={() => { setType(type === ty ? '' : ty); setEquipment(''); }}>
           <Icon name={`type:${ty}`} />{t(`extype_${ty}` as 'extype_strength')}
@@ -88,7 +113,9 @@ export function ExerciseNav({ onPick }: { onPick: (card: ExerciseCard) => void }
         </button>
       )))}
 
-      {group(t('f_equipment'), data!.equipment
+      {group('equipment', t('f_equipment'),
+        chosenChip(equipment, equipment ? nm(data!.equipment.find(e => e.id === equipment)?.names) : undefined, () => setEquipment('')),
+        data!.equipment
         .filter(e => equipmentCounts.get(e.id))
         .sort((a, b) => (equipmentCounts.get(b.id) || 0) - (equipmentCounts.get(a.id) || 0))
         .slice(0, region || type ? 40 : 12)   // the whole rack only once the part narrows it
@@ -108,7 +135,14 @@ export function ExerciseNav({ onPick }: { onPick: (card: ExerciseCard) => void }
               e.dataTransfer.setData('text/x-exercise', c.exercise_id);
               e.dataTransfer.effectAllowed = 'copy';
             }}
-            onClick={() => onPick(c)} title={t('nav_row_hint')}>
+            onClick={() => onPick(c)} title={t('nav_row_hint')}
+            onMouseEnter={e => setPreview({
+              name: nm(c.names), gif: c.gif_path, top: e.currentTarget.getBoundingClientRect().top,
+              sub: c.variations > 1 ? t('variations_n', c.variations) : t('one_way'),
+            })}
+            onMouseLeave={() => setPreview(null)}
+            onFocus={e => setPreview({ name: nm(c.names), gif: c.gif_path, top: e.currentTarget.getBoundingClientRect().top })}
+            onBlur={() => setPreview(null)}>
             <img src={mediaUrl(c.image_path)} alt="" loading="lazy" />
             <span>
               <span className="name">{nm(c.names)}</span>
@@ -122,6 +156,7 @@ export function ExerciseNav({ onPick }: { onPick: (card: ExerciseCard) => void }
           </button>
         ))}
       </div>
+      <HoverPreview preview={preview} />
     </aside>
   );
 }

@@ -51,7 +51,7 @@ const en = {
   blocks_n: (n: number) => `${n} block${n === 1 ? '' : 's'}`,
   // Exercise detail and substitutes
   details: 'Details and alternatives', muscles_worked: 'Muscles worked',
-  primary_m: 'Primary', secondary_m: 'Secondary', equipment: 'Equipment',
+  primary_m: 'Primary', secondary_m: 'Secondary', stabiliser_m: 'Holds you steady', equipment: 'Equipment',
   why_inferred: 'From the way this variation is done:',
   swap_title: 'Swap this exercise',
   swap_sub: (n: number) => `${n} alternative${n === 1 ? '' : 's'}, closest first.`,
@@ -121,7 +121,7 @@ const es: Partial<Dict> = {
   blocks_n: (n: number) => `${n} bloque${n === 1 ? '' : 's'}`,
   // Detalle del ejercicio y alternativas
   details: 'Detalles y alternativas', muscles_worked: 'Músculos trabajados',
-  primary_m: 'Principal', secondary_m: 'Secundario', equipment: 'Material',
+  primary_m: 'Principal', secondary_m: 'Secundario', stabiliser_m: 'Te mantiene estable', equipment: 'Material',
   why_inferred: 'Por cómo se hace esta variación:',
   swap_title: 'Cambiar este ejercicio',
   swap_sub: (n: number) => `${n} alternativa${n === 1 ? '' : 's'}, de la más parecida a la menos.`,

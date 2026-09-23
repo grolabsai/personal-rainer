@@ -263,3 +263,13 @@ select { min-height: 38px; padding: 6px 10px; border-radius: var(--gl-radius-md)
 .settable { display: block; overflow-x: auto; white-space: nowrap; }
 .settable input[type="number"] { width: 60px; }
 .settable select { min-width: 92px; }
+.filterhead { display: flex; align-items: center; gap: 8px; width: 100%; background: none; border: 0; padding: 4px 0; cursor: pointer; color: inherit; font: inherit; text-align: left; }
+.filterhead .filterlabel { margin: 0; }
+.filterhead .chev { margin-left: auto; color: var(--gl-text-tertiary); font-size: 11px; }
+.chosen { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; padding: 1px 8px; border-radius: 99px; border: 1px solid var(--gl-accent-ink); color: var(--gl-text); }
+.chosen.none { border-style: dashed; border-color: var(--gl-border); color: var(--gl-text-tertiary); }
+.chosen .clear { cursor: pointer; color: var(--gl-text-tertiary); padding-left: 2px; }
+.chosen .clear:hover { color: var(--gl-text); }
+.hoverpreview { position: fixed; z-index: 40; margin: 0; padding: 12px; background: var(--gl-panel); border: 1px solid var(--gl-border-strong); border-radius: var(--gl-radius-lg); box-shadow: 0 18px 50px rgba(0,0,0,.35); pointer-events: none; }
+.hoverpreview img { display: block; background: #fff; border-radius: var(--gl-radius-md); object-fit: contain; }
+.hoverpreview figcaption { margin-top: 8px; font-size: 13.5px; color: var(--gl-text-strong); }

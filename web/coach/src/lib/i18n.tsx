@@ -63,7 +63,7 @@ const en = {
   per_side: 'per side', set_variation: 'Variation for this set',
 
   // Builder: the exercise list, drag and drop, variations
-  f_body_part: 'Body part', f_kind: 'Kind of work', f_equipment: 'Equipment',
+  f_body_part: 'Body part', f_kind: 'Kind of work', f_equipment: 'Equipment', all_of_them: 'all',
   as_default: 'default', standard: 'Standard', equipment: 'Equipment',
   more_ways: (n: number) => `${n} more ways to vary this`,
   what_differs: 'what differs:',
@@ -156,7 +156,7 @@ const es: Partial<Dict> = {
   per_side: 'por lado', set_variation: 'Variación de esta serie',
 
   // Constructor: lista de ejercicios, arrastrar y soltar, variaciones
-  f_body_part: 'Parte del cuerpo', f_kind: 'Tipo de trabajo', f_equipment: 'Material',
+  f_body_part: 'Parte del cuerpo', f_kind: 'Tipo de trabajo', f_equipment: 'Material', all_of_them: 'todo',
   as_default: 'por defecto', standard: 'Estándar', equipment: 'Material',
   more_ways: (n: number) => `${n} formas más de variarlo`,
   what_differs: 'en qué se diferencian:',

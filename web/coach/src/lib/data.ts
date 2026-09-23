@@ -2,7 +2,7 @@ import { supabase } from './supabase';
 import type { Names } from './i18n';
 
 // ---------- shapes the coach screens read ----------
-export type Athlete = { athlete_id: string; profile: { display_name: string | null; avatar_url: string | null } | null };
+export type Athlete = { athlete_id: string; profile: { display_name: string | null; profile_image_url: string | null } | null };
 export type Place = {
   id: string; owner_id: string | null; visibility: 'private' | 'public'; names: Names;
   kind: string; city: string | null; source_location_id: string | null;
@@ -59,7 +59,7 @@ export async function loadMe() {
 export async function loadAthletes() {
   const { data, error } = await supabase
     .from('coach_athletes')
-    .select('athlete_id, profile:profiles(display_name, avatar_url)')
+    .select('athlete_id, profile:profiles(display_name, profile_image_url)')
     .order('created_at');
   if (error) throw error;
   return data as unknown as Athlete[];
@@ -319,7 +319,7 @@ export async function loadEnrollments() {
     .from('program_enrollments')
     .select(`id, start_date, status, athlete_id,
              program:programs(id, names), location:locations(id, names),
-             athlete:profiles!program_enrollments_athlete_id_fkey(display_name),
+             athlete:profiles(display_name),
              assignments:assignments(count)`)
     .order('created_at', { ascending: false });
   if (error) throw error;
