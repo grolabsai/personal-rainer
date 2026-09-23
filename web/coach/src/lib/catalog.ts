@@ -56,3 +56,42 @@ export async function loadVariants(exerciseId: string) {
   if (error) throw error;
   return data as unknown as VariantCard[];
 }
+
+// Which equipment each exercise can be done with, for the navigator's third filter and for the
+// "equipment first" row in a block. One fetch, kept for the session.
+let kit: Promise<Map<string, string[]>> | null = null;
+export function loadEquipmentByExercise(): Promise<Map<string, string[]>> {
+  kit ??= (async () => {
+    const { data, error } = await supabase.from('exercise_equipment_options')
+      .select('exercise_id, equipment_id, variations').order('variations', { ascending: false });
+    if (error) throw error;
+    const map = new Map<string, string[]>();
+    for (const r of data as unknown as { exercise_id: string; equipment_id: string }[]) {
+      const list = map.get(r.exercise_id) ?? [];
+      list.push(r.equipment_id);
+      map.set(r.exercise_id, list);
+    }
+    return map;
+  })();
+  return kit;
+}
+
+// The variation the catalog treats as typical — its attributes and kit are the defaults a coach
+// sees, instead of a meaningless "any".
+export async function loadTypical(exerciseId: string) {
+  const { data, error } = await supabase.from('exercise_display')
+    .select('variant_id, image_path, variations').eq('exercise_id', exerciseId).maybeSingle();
+  if (error) throw error;
+  return data as unknown as { variant_id: string; image_path: string; variations: number } | null;
+}
+
+// The equipment vocabulary is catalog data, not a coach's place, so it is public read.
+let equipment: Promise<{ id: string; names: Names; sort_order: number }[]> | null = null;
+export function loadEquipment() {
+  equipment ??= (async () => {
+    const { data, error } = await supabase.from('equipment').select('id, names, sort_order').order('sort_order');
+    if (error) throw error;
+    return data as unknown as { id: string; names: Names; sort_order: number }[];
+  })();
+  return equipment;
+}

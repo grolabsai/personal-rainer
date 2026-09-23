@@ -10,7 +10,7 @@ import { fileURLToPath } from 'node:url';
 const here = dirname(fileURLToPath(import.meta.url));
 const from = join(here, '..', '..', 'app', 'src', 'shared');
 const to = join(here, '..', 'src', 'shared');
-const files = ['equipment-icons.js', 'equipment-icons.d.ts'];
+const files = ['equipment-icons.js', 'equipment-icons.d.ts', 'ui-icons.js', 'ui-icons.d.ts'];
 const banner = '// Copied by npm run sync:shared from web/app/src/shared — edit the original, not this.\n';
 
 try {

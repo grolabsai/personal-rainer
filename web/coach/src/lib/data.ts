@@ -31,6 +31,7 @@ export type EditorItem = {
   exercise: { id: string; names: Names; type: string } | null;
   variant: { id: string; names: Names; image_path: string } | null;
   attributes: { dimension_id: string; value: string }[];
+  equipment: { equipment_id: string }[];
   sets: EditorSet[];
 };
 export type EditorBlock = {
@@ -163,6 +164,7 @@ const WORKOUT = `id, program_id, position, names, notes, day_of_week, week_in_cy
       exercise:exercises(id, names, type),
       variant:exercise_variants!program_workout_items_variant_id_fkey(id, names, image_path),
       attributes:item_attributes(dimension_id, value),
+      equipment:item_equipment(equipment_id),
       sets:item_sets(id, set_number, kind, reps_min, reps_max, duration_seconds, reps_per_side,
         load_kg, load_percent_1rm, rpe, tempo, rest_seconds, side, other_side, variant_id, notes)))`;
 
@@ -271,6 +273,16 @@ export async function loadDimensions() {
     values: vals.data as unknown as { dimension_id: string; value: string; names: Names }[],
   };
 }
+
+// One key piece of equipment per item: "a dumbbell lateral raise". It is a requirement the
+// resolver honours, not a lock on one variation.
+export const setItemEquipment = async (itemId: string, equipmentId: string | null) => {
+  const { error } = await supabase.from('item_equipment').delete().eq('item_id', itemId);
+  if (error) throw error;
+  if (!equipmentId) return;
+  const { error: e2 } = await supabase.from('item_equipment').insert({ item_id: itemId, equipment_id: equipmentId });
+  if (e2) throw e2;
+};
 
 export const setItemAttribute = async (itemId: string, dimensionId: string, value: string | null) => {
   if (!value) {

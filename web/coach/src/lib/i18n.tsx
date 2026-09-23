@@ -63,6 +63,9 @@ const en = {
   per_side: 'per side', set_variation: 'Variation for this set',
 
   // Builder: the exercise list, drag and drop, variations
+  f_body_part: 'Body part', f_kind: 'Kind of work', f_equipment: 'Equipment',
+  as_default: 'default', standard: 'Standard', equipment: 'Equipment',
+  more_ways: (n: number) => `${n} more ways to vary this`,
   extype_strength: 'Strength', extype_stretch: 'Stretch', extype_mobility: 'Mobility', extype_cardio: 'Cardio',
   nav_hint: (n: number) => `${n} exercises — drag one into a block, or click to add it to the one marked`,
   nav_row_hint: 'Drag into a block, or click to add',
@@ -151,6 +154,9 @@ const es: Partial<Dict> = {
   per_side: 'por lado', set_variation: 'Variación de esta serie',
 
   // Constructor: lista de ejercicios, arrastrar y soltar, variaciones
+  f_body_part: 'Parte del cuerpo', f_kind: 'Tipo de trabajo', f_equipment: 'Material',
+  as_default: 'por defecto', standard: 'Estándar', equipment: 'Material',
+  more_ways: (n: number) => `${n} formas más de variarlo`,
   extype_strength: 'Fuerza', extype_stretch: 'Estiramiento', extype_mobility: 'Movilidad', extype_cardio: 'Cardio',
   nav_hint: (n: number) => `${n} ejercicios — arrastra uno a un bloque o haz clic para añadirlo al marcado`,
   nav_row_hint: 'Arrastra a un bloque o haz clic para añadir',

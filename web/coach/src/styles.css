@@ -36,7 +36,8 @@ a { color: var(--gl-accent-ink); }
 .mono { font-family: var(--gl-font-mono); }
 
 /* Shell: one column, phone first; centred on wider screens. */
-.shell { min-height: 100%; display: flex; flex-direction: column; max-width: 1080px; margin: 0 auto; }
+/* The coach tool is a desktop workspace: use the width. A mobile layout comes later. */
+.shell { min-height: 100%; display: flex; flex-direction: column; max-width: 1560px; margin: 0 auto; }
 .topbar { position: sticky; top: 0; z-index: 5; display: flex; align-items: center; gap: 10px; padding: calc(10px + env(safe-area-inset-top)) 16px 10px; background: var(--gl-bg); border-bottom: 1px solid var(--gl-border); }
 .topbar .title { font-weight: 700; color: var(--gl-text-strong); flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .content { flex: 1; padding: 16px 16px 24px; }
@@ -208,8 +209,7 @@ select { min-height: 38px; padding: 6px 10px; border-radius: var(--gl-radius-md)
 .flag { font-size: 12px; color: var(--gl-warning-text); }
 
 /* The workout builder: a list you drag from, blocks you drop into */
-.builder { display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 20px; align-items: start; }
-@media (max-width: 860px) { .builder { grid-template-columns: 1fr; } }
+.builder { display: grid; grid-template-columns: 340px minmax(0, 1fr); gap: 22px; align-items: start; }
 .exnav { position: sticky; top: 8px; max-height: calc(100vh - 40px); display: flex; flex-direction: column; }
 .exlist { overflow: auto; border: 1px solid var(--gl-border); border-radius: var(--gl-radius-md); }
 .exrow { display: grid; grid-template-columns: 40px minmax(0, 1fr); gap: 8px; align-items: center; width: 100%; text-align: left; background: none; border: 0; border-bottom: 1px solid var(--gl-border); padding: 6px 8px; cursor: grab; color: inherit; font: inherit; }
@@ -234,3 +234,31 @@ select { min-height: 38px; padding: 6px 10px; border-radius: var(--gl-radius-md)
 .dayslot.over { outline: 2px dashed var(--gl-accent-ink); background: var(--gl-surface-hover); }
 .dayslot h4 { margin: 0 0 6px; font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--gl-text-tertiary); font-weight: 400; }
 .dayslot .pill { cursor: grab; }
+
+/* Filters, grouped in the order a coach thinks: body part, then kind of work, then equipment */
+.filtergroup { margin-top: 10px; }
+.filterlabel { display: block; font-family: var(--gl-font-mono); font-size: 10px; letter-spacing: .08em; text-transform: uppercase; color: var(--gl-text-tertiary); margin-bottom: 4px; }
+.chip .count { font-family: var(--gl-font-mono); font-size: 10.5px; color: var(--gl-text-tertiary); margin-left: 2px; }
+.chip[aria-pressed="true"] .count { color: inherit; }
+.searchbox { display: flex; align-items: center; gap: 8px; border: 1px solid var(--gl-border-strong); border-radius: var(--gl-radius-md); padding: 0 10px; background: var(--gl-surface); }
+.searchbox .input { border: 0; background: none; padding-left: 0; }
+.searchbox .icon { color: var(--gl-text-tertiary); }
+.navcount { margin: 10px 0 4px; }
+.exrow { grid-template-columns: 44px minmax(0, 1fr) 16px; }
+.exrow img { width: 44px; height: 44px; }
+.exkit { display: flex; align-items: center; gap: 4px; color: var(--gl-text-tertiary); }
+.itemsub { display: flex; align-items: center; gap: 5px; }
+
+/* One field per way of varying an exercise, equipment first */
+.varfields { display: flex; flex-wrap: wrap; gap: 10px; }
+.varfield { display: grid; gap: 3px; }
+.varlabel { display: flex; align-items: center; gap: 5px; font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--gl-text-tertiary); }
+.varfield select { min-width: 190px; }
+.moreways { margin-top: 10px; }
+.moreways summary { cursor: pointer; font-size: 12.5px; color: var(--gl-text-secondary); }
+.varany { display: grid; place-items: center; gap: 4px; min-height: 76px; font-size: 12px; color: var(--gl-text-secondary); text-align: center; }
+
+/* The set table stays inside its card */
+.settable { display: block; overflow-x: auto; white-space: nowrap; }
+.settable input[type="number"] { width: 60px; }
+.settable select { min-width: 92px; }
