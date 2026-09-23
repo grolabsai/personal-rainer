@@ -1,7 +1,9 @@
-// Vercel Routing Middleware: HTTP Basic auth in front of the whole explorer.
+// Vercel Routing Middleware: HTTP Basic auth in front of the Exercise Explorer only.
+// The coach app beside it has real accounts (Supabase) and a coach-role gate, so it needs no
+// second lock; the explorer browses the whole dataset with no sign-in, and its media is
+// © Gym visual, shown for internal use — so that part stays behind a password.
 // The password comes from the EXPLORER_PASSWORD environment variable; without it, nobody gets in.
-// The media is © Gym visual and is shown here for internal use only — keep this site private.
-export const config = { matcher: '/(.*)' };
+export const config = { matcher: '/explorer/(.*)' };
 
 export default function middleware(request) {
   const expected = process.env.EXPLORER_PASSWORD;

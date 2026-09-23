@@ -3,10 +3,11 @@
 https://github.com/hasaneyldrm/exercises-dataset.
 
     python3 web/admin/build.py [path/to/exercises-dataset]
-    python3 web/admin/build.py --web      # deployable copy in web/admin/dist/
+    python3 web/admin/build.py --web      # deployable copy in web/coach/public/explorer/
 
---web makes a private, password-protected site (web/middleware.js): English + Spanish text only,
-thumbnails copied in, GIFs loaded from the dataset repo at the pinned commit.
+--web makes the copy the coach app serves at /explorer/, behind the Basic auth in
+web/coach/middleware.js: English + Spanish text only, thumbnails copied in, GIFs loaded from the
+dataset repo at the pinned commit. The output is generated, so it is git-ignored.
 
 The dataset path defaults to ../exercises-dataset next to this repo. The local build copies no media:
 the page loads images and GIFs straight from the dataset clone. The media is (c) Gym visual; the web
@@ -61,12 +62,10 @@ if not WEB:
     sys.exit()
 
 import shutil
-dist = os.path.join(HERE, 'dist')
+dist = os.path.join(REPO, 'web', 'coach', 'public', 'explorer')
+if os.path.isdir(dist):
+    shutil.rmtree(dist)
 os.makedirs(dist, exist_ok=True)
-for name in os.listdir(dist):                 # keep .vercel (the project link) between builds
-    if name not in ('.vercel', '.vercelignore'):
-        path = os.path.join(dist, name)
-        shutil.rmtree(path) if os.path.isdir(path) else os.remove(path)
 os.makedirs(os.path.join(dist, 'media', 'images'))
 trimmed = [{**e, 'instructions': {l: e['instructions'][l] for l in WEB_LANGS},
             'instruction_steps': {l: e['instruction_steps'][l] for l in WEB_LANGS}} for e in exercises]
@@ -78,10 +77,5 @@ write_data(os.path.join(dist, 'data.js'), {
 for e in exercises:
     shutil.copy2(os.path.join(dataset, e['image']), os.path.join(dist, 'media', 'images'))
 shutil.copy2(os.path.join(HERE, 'index.html'), dist)
-shutil.copy2(os.path.join(HERE, 'web', 'middleware.js'), dist)
-with open(os.path.join(dist, '.vercelignore'), 'w') as f:   # never upload env files pulled by `vercel link`
-    f.write('.env*\n')
-with open(os.path.join(dist, 'package.json'), 'w') as f:   # marks the folder as an ES-module project for the middleware
-    json.dump({'name': 'exercise-explorer', 'private': True, 'type': 'module'}, f, indent=1)
 size = sum(os.path.getsize(os.path.join(r, n)) for r, _, fs in os.walk(dist) for n in fs)
 print(f'Wrote {os.path.relpath(dist, REPO)}/ ({size // 1024 // 1024} MB): {len(exercises)} exercises, {len(WEB_LANGS)} languages, thumbnails copied, GIFs from the dataset repo')

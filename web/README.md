@@ -4,10 +4,11 @@ Two web front ends over the same Supabase project (`personal-rainer`). One repo,
 the URL chooses the interface; what a user may do is decided by their role (`profiles.role`) and the
 database's row-level security, never by the URL.
 
-| Folder | Who | Live (until a custom domain) | Becomes |
-|---|---|---|---|
-| `admin/` | Coaches and admins: exercise catalog explorer; workout programming next | https://exercise-explorer-mu.vercel.app (password) | `admin.<domain>` |
-| `app/` | Athletes: assigned workouts and the program library, run a workout set by set, history | https://personal-trainer-app-lime.vercel.app | `app.<domain>` |
+| Folder | Who | Live |
+|---|---|---|
+| `coach/` | Coaches: athletes, places, the template library and editor, assigning, AI drafting | https://admin.flowristics.com |
+| `app/` | Athletes: assigned workouts, run one set by set, history, swaps | https://app.flowristics.com |
+| `admin/` | The Exercise Explorer's source (page + build script); it is served by the coach app at `/explorer/`, behind a password | https://admin.flowristics.com/explorer/ |
 
 ## app (athlete)
 
@@ -38,10 +39,52 @@ The body map and the equipment icons live in `web/app/src/shared/`, so the app a
 from one copy (they must sit inside the app: Vercel only uploads the project's own directory). `web/app/mock/detail-live.html?v=0047` renders the exercise screen against the live catalog
 without signing in (development only).
 
-## admin (coach)
+## coach (admin.flowristics.com)
 
-Static page, no build tool. `python3 web/admin/build.py` for local use (reads the dataset clone next to
-this repo), `--web` for the password-protected deploy in `web/admin/dist/`.
+Vite + React + TypeScript, same stack and tokens as the athlete app. Sign in with a normal account;
+the `coach` role decides whether the tool opens at all.
+
+```bash
+cd web/coach
+cp .env.example .env.local   # same Supabase URL and publishable key as the athlete app
+npm install
+npm run dev                  # http://127.0.0.1:5173
+npm run build
+vercel deploy --prod         # project: exercise-explorer (it owns admin.flowristics.com)
+```
+
+Screens: **Athletes** (link one by the email they signed up with), **Places** (a gym or a home, with
+its kit in priority order and the heaviest weight it has), **Library** (templates → the workout
+editor: blocks, items, per-set rows), **Assign** (template + athlete + place → resolved plan, with
+every substitution and load flag listed), **Calendar** (who is following what, from when), and
+**Draft with AI**.
+
+The **Exercise Explorer** lives on inside this app at `/explorer/`, still behind the Basic-auth
+password (`web/coach/middleware.js`, `EXPLORER_PASSWORD`) because it browses the whole dataset with
+no sign-in and the media is © Gym visual. Rebuild it with `python3 web/admin/build.py --web`, which
+writes into `web/coach/public/explorer/` (generated, git-ignored).
+
+`web/coach/src/shared/` is a committed copy of `web/app/src/shared/` — Vercel uploads only the
+project being deployed, so the files cannot be imported across apps. `npm run sync:shared` refreshes
+them; edit the originals.
+
+## Drafting a programme with AI
+
+`supabase/functions/draft-program/index.ts` is an edge function: it checks the caller is a coach,
+gives Claude the catalog as tools (`search_exercises`, `list_vocabulary`), and takes back a draft in
+the template shape — exercises and required attributes, never a specific variation, so the draft is
+portable and the location resolver still chooses the kit. Every draft is validated against the real
+catalog before the coach sees it, and the model never writes to the database: saving goes through
+`create_program_from_json()` under the coach's own permissions. Prompts and responses are kept in
+`program_drafts`.
+
+It needs one secret before it works:
+
+```bash
+supabase secrets set ANTHROPIC_API_KEY=sk-ant-... --project-ref kdvzzasgmkqdbyielxmz
+```
+
+Without it the screen says so plainly (HTTP 503) instead of failing obscurely.
 
 ## Data model for programming
 

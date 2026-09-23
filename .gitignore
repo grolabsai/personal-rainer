@@ -93,3 +93,4 @@ android/app/google-services.json
 # Admin (exercise explorer) build output (generated from exercises-dataset)
 web/admin/data.js
 web/admin/dist/
+supabase/.temp/
