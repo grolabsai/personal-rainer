@@ -1,0 +1,131 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 900" width="1100" height="900" font-family="Hanken Grotesk, -apple-system, BlinkMacSystemFont, Segoe UI, sans-serif">
+<defs><marker id="arw" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#9A988F"/></marker><marker id="arwd" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0 L10 5 L0 10 z" fill="#8C79C4"/></marker></defs>
+<rect width="1100" height="900" fill="#FAFAF9"/>
+<rect x="30" y="52" width="320" height="392" rx="14" fill="#EAF3F2"/>
+<text x="46" y="74" font-size="11.5" letter-spacing="1.6" font-weight="700" fill="#3E7F74">CATALOG — WHAT EXISTS</text>
+<rect x="30" y="462" width="320" height="240" rx="14" fill="#EBF4EE"/>
+<text x="46" y="484" font-size="11.5" letter-spacing="1.6" font-weight="700" fill="#1D7A5C">PLACES — WHAT YOU CAN TRAIN WITH</text>
+<rect x="570" y="52" width="505" height="478" rx="14" fill="#F3EFFA"/>
+<text x="586" y="74" font-size="11.5" letter-spacing="1.6" font-weight="700" fill="#6B54A8">PLANNING — WHAT TO DO</text>
+<rect x="570" y="552" width="345" height="300" rx="14" fill="#EDF3FA"/>
+<text x="586" y="574" font-size="11.5" letter-spacing="1.6" font-weight="700" fill="#41699E">DOING — WHAT HAPPENED</text>
+<rect x="60" y="78" width="265" height="58" rx="9" fill="#FFFFFF" stroke="#DAD8D2"/>
+<rect x="60" y="78" width="4" height="58" rx="2" fill="#4E9E92"/>
+<text x="74" y="99" font-size="13" font-weight="700" fill="#1A1A1A">exercises</text>
+<text x="74" y="117" font-size="10.5" fill="#63625D">the movement · type · pattern · mechanics</text>
+<text x="74" y="132" font-size="10.5" fill="#63625D">bench-press, biceps-curl, push-up</text>
+<rect x="60" y="156" width="265" height="58" rx="9" fill="#FFFFFF" stroke="#DAD8D2"/>
+<rect x="60" y="156" width="4" height="58" rx="2" fill="#4E9E92"/>
+<text x="74" y="177" font-size="13" font-weight="700" fill="#1A1A1A">exercise_variants</text>
+<text x="74" y="195" font-size="10.5" fill="#63625D">one concrete way to do it (the variation)</text>
+<text x="74" y="210" font-size="10.5" fill="#63625D">0025 Bench press · Flat — Barbell + Bench</text>
+<rect x="60" y="234" width="265" height="44" rx="9" fill="#FFFFFF" stroke="#DAD8D2"/>
+<rect x="60" y="234" width="4" height="44" rx="2" fill="#4E9E92"/>
+<text x="74" y="255" font-size="13" font-weight="700" fill="#1A1A1A">variant_attributes</text>
+<text x="74" y="273" font-size="10.5" fill="#63625D">grip = neutral · bench_angle = incline</text>
+<rect x="60" y="296" width="265" height="44" rx="9" fill="#FFFFFF" stroke="#DAD8D2"/>
+<rect x="60" y="296" width="4" height="44" rx="2" fill="#4E9E92"/>
+<text x="74" y="317" font-size="13" font-weight="700" fill="#1A1A1A">variant_equipment</text>
+<text x="74" y="335" font-size="10.5" fill="#63625D">barbell + bench</text>
+<rect x="60" y="358" width="265" height="44" rx="9" fill="#FFFFFF" stroke="#DAD8D2"/>
+<rect x="60" y="358" width="4" height="44" rx="2" fill="#4E9E92"/>
+<text x="74" y="379" font-size="13" font-weight="700" fill="#1A1A1A">equipment</text>
+<text x="74" y="397" font-size="10.5" fill="#63625D">34 items, shared by the whole catalog</text>
+<rect x="60" y="490" width="265" height="58" rx="9" fill="#FFFFFF" stroke="#DAD8D2"/>
+<rect x="60" y="490" width="4" height="58" rx="2" fill="#1D9E75"/>
+<text x="74" y="511" font-size="13" font-weight="700" fill="#1A1A1A">locations</text>
+<text x="74" y="529" font-size="10.5" fill="#63625D">visibility: private | public · kind</text>
+<text x="74" y="544" font-size="10.5" fill="#63625D">owner, or forked from a public one</text>
+<rect x="60" y="568" width="265" height="58" rx="9" fill="#FFFFFF" stroke="#DAD8D2"/>
+<rect x="60" y="568" width="4" height="58" rx="2" fill="#1D9E75"/>
+<text x="74" y="589" font-size="13" font-weight="700" fill="#1A1A1A">location_equipment</text>
+<text x="74" y="607" font-size="10.5" fill="#63625D">rank — your priority, 0 = reach for first</text>
+<text x="74" y="622" font-size="10.5" fill="#63625D">max_load_kg · quantity</text>
+<rect x="60" y="646" width="265" height="44" rx="9" fill="#FFFFFF" stroke="#DAD8D2"/>
+<rect x="60" y="646" width="4" height="44" rx="2" fill="#1D9E75"/>
+<text x="74" y="667" font-size="13" font-weight="700" fill="#1A1A1A">user_locations</text>
+<text x="74" y="685" font-size="10.5" fill="#63625D">my places · which one is the default</text>
+<rect x="600" y="78" width="280" height="58" rx="9" fill="#FFFFFF" stroke="#DAD8D2"/>
+<rect x="600" y="78" width="4" height="58" rx="2" fill="#A98EDA"/>
+<text x="614" y="99" font-size="13" font-weight="700" fill="#1A1A1A">programs</text>
+<text x="614" y="117" font-size="10.5" fill="#63625D">kind: template (portable) | plan (bound)</text>
+<text x="614" y="132" font-size="10.5" fill="#63625D">athlete · location · track_mode</text>
+<rect x="600" y="156" width="280" height="44" rx="9" fill="#FFFFFF" stroke="#DAD8D2"/>
+<rect x="600" y="156" width="4" height="44" rx="2" fill="#A98EDA"/>
+<text x="614" y="177" font-size="13" font-weight="700" fill="#1A1A1A">program_workouts</text>
+<text x="614" y="195" font-size="10.5" fill="#63625D">Day A · position in the program</text>
+<rect x="600" y="218" width="280" height="74" rx="9" fill="#FFFFFF" stroke="#DAD8D2"/>
+<rect x="600" y="218" width="4" height="74" rx="2" fill="#A98EDA"/>
+<text x="614" y="239" font-size="13" font-weight="700" fill="#1A1A1A">workout_blocks</text>
+<text x="614" y="257" font-size="10.5" fill="#63625D">purpose: warmup | main | accessory |</text>
+<text x="614" y="272" font-size="10.5" fill="#63625D">  finisher | cooldown</text>
+<text x="614" y="287" font-size="10.5" fill="#63625D">mode: straight | rounds · rounds · rests</text>
+<rect x="600" y="310" width="280" height="74" rx="9" fill="#FFFFFF" stroke="#DAD8D2"/>
+<rect x="600" y="310" width="4" height="74" rx="2" fill="#A98EDA"/>
+<text x="614" y="331" font-size="13" font-weight="700" fill="#1A1A1A">program_workout_items</text>
+<text x="614" y="349" font-size="10.5" fill="#63625D">exercise_id — what to train (intent)</text>
+<text x="614" y="364" font-size="10.5" fill="#63625D">variant_id — resolved for this location</text>
+<text x="614" y="379" font-size="10.5" fill="#63625D">position inside the block</text>
+<rect x="600" y="402" width="280" height="104" rx="9" fill="#FFFFFF" stroke="#DAD8D2"/>
+<rect x="600" y="402" width="4" height="104" rx="2" fill="#A98EDA"/>
+<text x="614" y="423" font-size="13" font-weight="700" fill="#1A1A1A">item_sets</text>
+<text x="614" y="441" font-size="10.5" fill="#63625D">set_number · kind: warmup|working|backoff|drop</text>
+<text x="614" y="456" font-size="10.5" fill="#63625D">reps_min–reps_max | duration_s · load · rpe · tempo</text>
+<text x="614" y="471" font-size="10.5" fill="#63625D">rest_seconds — the rest AFTER this set</text>
+<text x="614" y="486" font-size="10.5" fill="#63625D">side · other_side — both, each, alternating, hold</text>
+<text x="614" y="501" font-size="10.5" fill="#63625D">variant_id — per-set override (wide → diamond)</text>
+<rect x="910" y="320" width="155" height="54" rx="9" fill="#FFFFFF" stroke="#DAD8D2"/>
+<rect x="910" y="320" width="4" height="54" rx="2" fill="#A98EDA"/>
+<text x="924" y="341" font-size="13" font-weight="700" fill="#1A1A1A">item_attributes</text>
+<text x="924" y="359" font-size="10.5" fill="#63625D">required, e.g.</text>
+<text x="924" y="374" font-size="10.5" fill="#63625D">bench_angle = incline</text>
+<rect x="600" y="578" width="280" height="58" rx="9" fill="#FFFFFF" stroke="#DAD8D2"/>
+<rect x="600" y="578" width="4" height="58" rx="2" fill="#6E9BD6"/>
+<text x="614" y="599" font-size="13" font-weight="700" fill="#1A1A1A">assignments</text>
+<text x="614" y="617" font-size="10.5" fill="#63625D">athlete · date · location · status</text>
+<text x="614" y="632" font-size="10.5" fill="#63625D">the prescription handed over</text>
+<rect x="600" y="656" width="280" height="44" rx="9" fill="#FFFFFF" stroke="#DAD8D2"/>
+<rect x="600" y="656" width="4" height="44" rx="2" fill="#6E9BD6"/>
+<text x="614" y="677" font-size="13" font-weight="700" fill="#1A1A1A">workout_sessions</text>
+<text x="614" y="695" font-size="10.5" fill="#63625D">started · finished · where · track_mode</text>
+<rect x="600" y="720" width="280" height="104" rx="9" fill="#FFFFFF" stroke="#DAD8D2"/>
+<rect x="600" y="720" width="4" height="104" rx="2" fill="#6E9BD6"/>
+<text x="614" y="741" font-size="13" font-weight="700" fill="#1A1A1A">session_sets</text>
+<text x="614" y="759" font-size="10.5" fill="#63625D">prescribed_set_id → the set it answers</text>
+<text x="614" y="774" font-size="10.5" fill="#63625D">variant_id — what was ACTUALLY done</text>
+<text x="614" y="789" font-size="10.5" fill="#63625D">reps · weight_kg · rpe</text>
+<text x="614" y="804" font-size="10.5" fill="#63625D">status: done | partial | skipped | not_logged</text>
+<text x="614" y="819" font-size="10.5" fill="#63625D">deviation_reason: equipment | load | pain | time</text>
+<polyline points="192,136 192,156" fill="none" stroke="#9A988F" stroke-width="1.5" marker-end="url(#arw)"/>
+<polyline points="192,214 192,234" fill="none" stroke="#9A988F" stroke-width="1.5" marker-end="url(#arw)"/>
+<polyline points="60,185 42,185 42,318 60,318" fill="none" stroke="#9A988F" stroke-width="1.5" marker-end="url(#arw)"/>
+<polyline points="192,548 192,568" fill="none" stroke="#9A988F" stroke-width="1.5" marker-end="url(#arw)"/>
+<polyline points="740,136 740,156" fill="none" stroke="#9A988F" stroke-width="1.5" marker-end="url(#arw)"/>
+<polyline points="740,200 740,218" fill="none" stroke="#9A988F" stroke-width="1.5" marker-end="url(#arw)"/>
+<polyline points="740,292 740,310" fill="none" stroke="#9A988F" stroke-width="1.5" marker-end="url(#arw)"/>
+<polyline points="740,384 740,402" fill="none" stroke="#9A988F" stroke-width="1.5" marker-end="url(#arw)"/>
+<polyline points="880,347 910,347" fill="none" stroke="#9A988F" stroke-width="1.5" marker-end="url(#arw)"/>
+<polyline points="740,636 740,656" fill="none" stroke="#9A988F" stroke-width="1.5" marker-end="url(#arw)"/>
+<polyline points="740,700 740,720" fill="none" stroke="#9A988F" stroke-width="1.5" marker-end="url(#arw)"/>
+<polyline points="325,318 350,318 350,380 325,380" fill="none" stroke="#8C79C4" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arwd)"/>
+<text x="356" y="352" font-size="10" font-style="italic" fill="#6B54A8">needs</text>
+<polyline points="325,668 345,668 345,380 330,380" fill="none" stroke="#8C79C4" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arwd)"/>
+<text x="351" y="470" font-size="10" font-style="italic" fill="#6B54A8">ranks</text>
+<polyline points="60,672 40,672 40,519 60,519" fill="none" stroke="#8C79C4" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arwd)"/>
+
+<polyline points="600,330 500,330 500,107 325,107" fill="none" stroke="#8C79C4" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arwd)"/>
+<text x="380" y="100" font-size="10" font-style="italic" fill="#6B54A8">what to train</text>
+<polyline points="600,362 455,362 455,178 325,178" fill="none" stroke="#8C79C4" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arwd)"/>
+<text x="370" y="171" font-size="10" font-style="italic" fill="#6B54A8">resolved variation</text>
+<polyline points="600,455 410,455 410,200 325,200" fill="none" stroke="#8C79C4" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arwd)"/>
+<text x="415" y="264" font-size="10" font-style="italic" fill="#6B54A8">per-set override</text>
+<polyline points="600,600 530,600 530,512 325,512" fill="none" stroke="#8C79C4" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arwd)"/>
+<text x="470" y="506" font-size="10" font-style="italic" fill="#6B54A8">where</text>
+<polyline points="880,770 935,770 935,440 880,440" fill="none" stroke="#8C79C4" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arwd)"/>
+<text x="944" y="600" font-size="10" font-style="italic" fill="#6B54A8">was prescribed</text>
+<line x1="60" y1="872" x2="110" y2="872" stroke="#9A988F" stroke-width="1.5" marker-end="url(#arw)"/>
+<text x="118" y="876" font-size="11" fill="#63625D">contains (one → many)</text>
+<line x1="300" y1="872" x2="350" y2="872" stroke="#8C79C4" stroke-width="1.5" stroke-dasharray="5 4" marker-end="url(#arwd)"/>
+<text x="358" y="876" font-size="11" fill="#63625D">refers to</text>
+<text x="600" y="876" font-size="11" fill="#78766E">A template has no location and no variant_id. Assigning it resolves both and freezes the copy.</text>
+</svg>

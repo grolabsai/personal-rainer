@@ -6,7 +6,7 @@ import { fmtClock } from '../lib/active';
 import { Failed, Loading } from '../components/Status';
 
 const totals = (s: SessionRow) => {
-  const done = s.sets.filter(x => x.completed);
+  const done = s.sets.filter(x => x.status === 'done');
   return { done: done.length, total: s.sets.length, volume: Math.round(done.reduce((v, x) => v + (x.reps || 0) * (x.weight_kg || 0), 0)) };
 };
 

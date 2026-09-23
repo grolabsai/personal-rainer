@@ -36,6 +36,19 @@ const en = {
   loading: 'Loading…', load_failed: 'Could not load this. Check your connection and try again.', retry: 'Try again',
   not_found: 'This workout is not available to you.',
   credit_media: 'Exercise images and animations © Gym visual —', credit_data: 'exercise data (MIT) from',
+  // Blocks, rounds and prescribed sets
+  purpose_warmup: 'Warm-up', purpose_main: 'Main', purpose_accessory: 'Accessory',
+  purpose_finisher: 'Finisher', purpose_cooldown: 'Cool-down',
+  round_of: (r: number, n: number) => `Round ${r} of ${n}`,
+  step_of: (i: number, n: number) => `Step ${i} of ${n}`,
+  sets_word: 'sets', amrap_short: 'AMRAP', per_side: 'per side',
+  each_side: 'One side at a time', alternating: 'Alternating', left: 'Left', right: 'Right',
+  other_holds: 'the other side holds', rpe_short: 'RPE', tempo_short: 'Tempo',
+  kind_warmup: 'Warm-up set', kind_backoff: 'Back-off', kind_drop: 'Drop set',
+  rest_between_rounds: (s: number) => `${s} s between rounds`,
+  swapped_here: 'Changed to fit this place', not_available_here: 'Not available here as prescribed',
+  load_warning: (needs: number, has: number) => `Prescribed ${needs} kg; the heaviest here is ${has} kg`,
+  blocks_n: (n: number) => `${n} block${n === 1 ? '' : 's'}`,
   // Exercise detail and substitutes
   details: 'Details and alternatives', muscles_worked: 'Muscles worked',
   primary_m: 'Primary', secondary_m: 'Secondary', equipment: 'Equipment',
@@ -93,6 +106,19 @@ const es: Partial<Dict> = {
   loading: 'Cargando…', load_failed: 'No se pudo cargar. Revisa tu conexión e inténtalo de nuevo.', retry: 'Reintentar',
   not_found: 'Este entrenamiento no está disponible para ti.',
   credit_media: 'Imágenes y animaciones de ejercicios © Gym visual —', credit_data: 'datos de ejercicios (MIT) de',
+  // Bloques, rondas y series prescritas
+  purpose_warmup: 'Calentamiento', purpose_main: 'Principal', purpose_accessory: 'Accesorio',
+  purpose_finisher: 'Remate', purpose_cooldown: 'Vuelta a la calma',
+  round_of: (r: number, n: number) => `Ronda ${r} de ${n}`,
+  step_of: (i: number, n: number) => `Paso ${i} de ${n}`,
+  sets_word: 'series', amrap_short: 'máximas', per_side: 'por lado',
+  each_side: 'Un lado cada vez', alternating: 'Alterno', left: 'Izquierda', right: 'Derecha',
+  other_holds: 'el otro lado sostiene', rpe_short: 'RPE', tempo_short: 'Tempo',
+  kind_warmup: 'Serie de calentamiento', kind_backoff: 'Serie de descarga', kind_drop: 'Serie descendente',
+  rest_between_rounds: (s: number) => `${s} s entre rondas`,
+  swapped_here: 'Cambiado para este lugar', not_available_here: 'Aquí no se puede hacer como está prescrito',
+  load_warning: (needs: number, has: number) => `Prescrito ${needs} kg; lo más pesado aquí es ${has} kg`,
+  blocks_n: (n: number) => `${n} bloque${n === 1 ? '' : 's'}`,
   // Detalle del ejercicio y alternativas
   details: 'Detalles y alternativas', muscles_worked: 'Músculos trabajados',
   primary_m: 'Principal', secondary_m: 'Secundario', equipment: 'Material',
@@ -128,6 +154,7 @@ type Ctx = {
   t: <K extends Key>(k: K, ...a: Args<K>) => string;
   nm: (n: Names) => string;
 };
+export type Translate = Ctx['t'];
 const I18n = createContext<Ctx | null>(null);
 
 const stored = (): Lang => {

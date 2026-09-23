@@ -43,12 +43,19 @@ without signing in (development only).
 Static page, no build tool. `python3 web/admin/build.py` for local use (reads the dataset clone next to
 this repo), `--web` for the password-protected deploy in `web/admin/dist/`.
 
-## Data model for programming (migration 0005)
+## Data model for programming
 
-`programs` → `program_workouts` → `program_workout_items` (an exercise variation with sets, reps, weight,
-rest), `assignments` (a workout for an athlete on a date), `workout_sessions` + `session_sets` (what was
-done). `coach_athletes` links coaches to athletes. Template programs (`is_template`) are visible to every
-signed-in user; three demo templates are seeded (migration 0006).
+`programs` → `program_workouts` → `workout_blocks` → `program_workout_items` → `item_sets`: a block is an
+ordered group sharing one execution rule (`straight` or `rounds`, which is how supersets and circuits are
+expressed) and one purpose (warm-up … cool-down); a set is one bout of work followed by a rest, always an
+explicit row. `locations` + `location_equipment` say where an athlete trains and with what, ranked.
+A template names exercises, a prescription names variations: `assign_program()` forks the template,
+resolves each item for the location, enrols the athlete and generates `assignments`. `workout_sessions` +
+`session_sets` record what was actually done against each prescribed set.
+Full write-up: [../docs/programming-model.md](../docs/programming-model.md).
+
+`coach_athletes` links coaches to athletes. Public templates (`is_template` + `visibility = 'public'`) are
+visible to every signed-in user; three demo templates are seeded (migration 0006).
 
 Making someone a coach is an admin action (SQL editor or service role):
 `update profiles set role = 'coach' where id = '<user id>';`

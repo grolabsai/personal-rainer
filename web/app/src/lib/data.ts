@@ -6,14 +6,24 @@ const VARIANT = 'id, exercise_id, names, image_path, gif_path, instruction_steps
 export async function loadWorkout(id: string): Promise<Workout | null> {
   const { data, error } = await supabase
     .from('program_workouts')
-    .select(`id, names, notes, position, program:programs(id, names),
-             items:program_workout_items(id, position, sets, reps, weight_kg, rest_seconds, notes, variant:exercise_variants(${VARIANT}))`)
+    .select(`id, names, notes, position, program:programs(id, names, track_mode),
+             blocks:workout_blocks(id, position, purpose, mode, rounds, names, notes,
+               rest_between_items_s, rest_between_rounds_s, rest_after_s, params,
+               items:program_workout_items(id, position, notes, exercise_id, substitution_level, substitution_note,
+                 variant:exercise_variants!program_workout_items_variant_id_fkey(${VARIANT}),
+                 sets:item_sets(id, set_number, kind, reps_min, reps_max, duration_seconds, reps_per_side,
+                   load_kg, load_percent_1rm, rpe, tempo, rest_seconds, side, other_side, notes, variant_id,
+                   variant:exercise_variants!item_sets_variant_id_fkey(${VARIANT}))))`)
     .eq('id', id)
     .maybeSingle();
   if (error) throw error;
   if (!data) return null;
   const w = data as unknown as Workout;
-  w.items.sort((a, b) => a.position - b.position);
+  w.blocks.sort((a, b) => a.position - b.position);
+  for (const block of w.blocks) {
+    block.items.sort((a, b) => a.position - b.position);
+    for (const item of block.items) item.sets.sort((a, b) => a.set_number - b.set_number);
+  }
   return w;
 }
 
@@ -46,7 +56,7 @@ export async function loadProgram(id: string) {
 export async function loadHistory() {
   const { data, error } = await supabase
     .from('workout_sessions')
-    .select('id, started_at, finished_at, duration_seconds, workout:program_workouts(names), sets:session_sets(reps, weight_kg, completed)')
+    .select('id, started_at, finished_at, duration_seconds, workout:program_workouts(names), sets:session_sets(reps, weight_kg, status)')
     .order('finished_at', { ascending: false })
     .limit(50);
   if (error) throw error;
@@ -56,7 +66,7 @@ export async function loadHistory() {
 export async function loadSession(id: string) {
   const { data, error } = await supabase
     .from('workout_sessions')
-    .select('id, started_at, finished_at, duration_seconds, workout:program_workouts(names), sets:session_sets(reps, weight_kg, completed)')
+    .select('id, started_at, finished_at, duration_seconds, workout:program_workouts(names), sets:session_sets(reps, weight_kg, status)')
     .eq('id', id)
     .maybeSingle();
   if (error) throw error;
@@ -65,10 +75,13 @@ export async function loadSession(id: string) {
 
 const num = (s: string) => { const n = parseFloat(s.replace(',', '.')); return Number.isFinite(n) ? n : null; };
 
-// Saves the session and every planned set (done or not), then marks the assignment complete.
+// Saves the session and every prescribed set, whether it was done or not, then marks the
+// assignment complete. Each row points at the set it answers, and carries the variation actually
+// performed — so a swap or a missed set is a comparison, not a hole in the history.
 export async function saveSession(active: ActiveSession, workout: Workout): Promise<string> {
   const finished = new Date();
   const started = new Date(active.startedAt);
+  const track = workout.program?.track_mode || 'full';
   const { data: session, error } = await supabase.from('workout_sessions').insert({
     athlete_id: active.userId,
     workout_id: active.workoutId,
@@ -76,21 +89,34 @@ export async function saveSession(active: ActiveSession, workout: Workout): Prom
     started_at: started.toISOString(),
     finished_at: finished.toISOString(),
     duration_seconds: Math.max(0, Math.round((finished.getTime() - started.getTime()) / 1000)),
+    track_mode: track,
   }).select('id').single();
   if (error) throw error;
-  const rows = workout.items.flatMap(item => (active.sets[item.id] || []).map((s, i) => ({
-    session_id: session.id,
-    item_id: item.id,
-    variant_id: (active.swaps?.[item.id] || item.variant).id,
-    set_number: i + 1,
-    reps: s.reps ? Math.round(num(s.reps) ?? 0) : null,
-    weight_kg: s.weight ? num(s.weight) : null,
-    completed: s.done,
-  })));
-  if (rows.length) {
-    const { error: e2 } = await supabase.from('session_sets').insert(rows);
-    if (e2) throw e2;
+
+  if (track !== 'none') {
+    const rows = workout.blocks.flatMap(block => block.items.flatMap(item => item.sets.map(set => {
+      const entry = active.sets[set.id];
+      const variant = active.swaps?.[item.id] || set.variant || item.variant;
+      return {
+        session_id: session.id,
+        item_id: item.id,
+        prescribed_set_id: set.id,
+        variant_id: variant?.id ?? null,
+        set_number: set.set_number,
+        round_number: block.mode === 'rounds' ? set.set_number : null,
+        reps: track === 'full' && entry?.reps ? Math.round(num(entry.reps) ?? 0) : null,
+        weight_kg: track === 'full' && entry?.weight ? num(entry.weight) : null,
+        status: entry?.done ? 'done' : 'skipped',
+        deviation_reason: active.swaps?.[item.id] ? 'equipment' : null,
+      };
+    })));
+    const usable = rows.filter(r => r.variant_id);
+    if (usable.length) {
+      const { error: e2 } = await supabase.from('session_sets').insert(usable);
+      if (e2) throw e2;
+    }
   }
+
   if (active.assignmentId) {
     const { error: e3 } = await supabase.rpc('complete_assignment', { p_assignment: active.assignmentId });
     if (e3) throw e3;
@@ -109,7 +135,7 @@ export type ProgramRow = {
 export type SessionRow = {
   id: string; started_at: string; finished_at: string; duration_seconds: number;
   workout: { names: { en?: string; es?: string } } | null;
-  sets: { reps: number | null; weight_kg: number | null; completed: boolean }[];
+  sets: { reps: number | null; weight_kg: number | null; status: string }[];
 };
 
 // Redundant rows are the same claim less precisely ("chest" beside "upper chest"): the athlete

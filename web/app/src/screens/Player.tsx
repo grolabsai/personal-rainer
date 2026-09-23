@@ -1,10 +1,11 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { saveSession } from '../lib/data';
 import { useI18n } from '../lib/i18n';
 import { mediaUrl } from '../lib/media';
-import { fmtClock, isTimed } from '../lib/active';
 import { go } from '../lib/router';
-import type { ActiveSession, SetEntry, Workout } from '../lib/types';
+import { fmtClock, isTimed, restAfter, stepsOf, variantOf } from '../lib/active';
+import { kindLabel, setLine, setVariantName, sideLabel } from '../lib/prescription';
+import type { ActiveSession, Block, SetEntry, Workout } from '../lib/types';
 
 type Props = {
   active: ActiveSession;
@@ -13,6 +14,8 @@ type Props = {
   onFinished: (sessionId: string) => void;
   onDiscard: () => void;
 };
+
+const purposeKey = (p: Block['purpose']) => `purpose_${p}` as 'purpose_main';
 
 export function Player({ active, workout, onChange, onFinished, onDiscard }: Props) {
   const { t, nm, lang } = useI18n();
@@ -38,34 +41,34 @@ export function Player({ active, workout, onChange, onFinished, onDiscard }: Pro
     if (!confirm && d.open) d.close();
   }, [confirm]);
 
-  const items = workout.items;
-  const idx = Math.min(active.current, items.length - 1);
-  const item = items[idx];
-  // The athlete may be doing a substitute for this item; everything on screen follows that choice.
-  const variant = active.swaps?.[item.id] || item.variant;
-  const sets = active.sets[item.id] || [];
-  const timed = isTimed(item.reps);
-  const allSets = items.flatMap(it => active.sets[it.id] || []);
-  const doneCount = allSets.filter(s => s.done).length;
-  const exDone = (id: string) => (active.sets[id] || []).every(s => s.done);
+  // A straight block gives one step per exercise; a rounds block one step per exercise per round.
+  const steps = useMemo(() => stepsOf(workout), [workout]);
+  const idx = Math.min(active.current, steps.length - 1);
+  const step = steps[idx];
+  const track = workout.program?.track_mode || 'full';
+  const entry = (id: string): SetEntry => active.sets[id] || { reps: '', weight: '', done: false };
+  const stepDone = (i: number) => steps[i].sets.every(s => entry(s.id).done);
+  const allDone = steps.flatMap(s => s.sets).filter(s => entry(s.id).done).length;
+  const allSets = steps.reduce((n, s) => n + s.sets.length, 0);
   const elapsed = (now - new Date(active.startedAt).getTime()) / 1000;
   const restLeft = active.restUntil ? (active.restUntil - now) / 1000 : 0;
+  const variant = variantOf(step, step.sets.length === 1 ? step.sets[0] : undefined, active);
 
-  const updateSet = (i: number, patch: Partial<SetEntry>) => {
-    const next = sets.map((s, j) => (j === i ? { ...s, ...patch } : s));
-    onChange({ ...active, sets: { ...active.sets, [item.id]: next } });
-  };
-  const toggle = (i: number) => {
-    const becomingDone = !sets[i].done;
-    const next = sets.map((s, j) => (j === i ? { ...s, done: becomingDone } : s));
-    const lastOfAll = idx === items.length - 1 && next.every(s => s.done);
+  const update = (id: string, patch: Partial<SetEntry>) =>
+    onChange({ ...active, sets: { ...active.sets, [id]: { ...entry(id), ...patch } } });
+
+  const toggle = (setId: string) => {
+    const becomingDone = !entry(setId).done;
+    const set = step.sets.find(s => s.id === setId)!;
+    const last = idx === steps.length - 1 && step.sets.every(s => s.id === setId ? becomingDone : entry(s.id).done);
+    const rest = restAfter(step, set);
     onChange({
       ...active,
-      sets: { ...active.sets, [item.id]: next },
-      restUntil: becomingDone && !lastOfAll ? Date.now() + item.rest_seconds * 1000 : active.restUntil,
+      sets: { ...active.sets, [setId]: { ...entry(setId), done: becomingDone } },
+      restUntil: becomingDone && !last && rest > 0 ? Date.now() + rest * 1000 : active.restUntil,
     });
   };
-  const goTo = (i: number) => onChange({ ...active, current: Math.max(0, Math.min(items.length - 1, i)) });
+  const goTo = (i: number) => onChange({ ...active, current: Math.max(0, Math.min(steps.length - 1, i)) });
 
   const finish = async () => {
     setSaving(true); setSaveError(false);
@@ -77,41 +80,73 @@ export function Player({ active, workout, onChange, onFinished, onDiscard }: Pro
     <>
       <div className="player-top">
         <span className="clock" aria-label={t('duration')}>{fmtClock(elapsed)}</span>
-        <span className="muted small">{t('exercise_of', idx + 1, items.length)}</span>
+        <span className="muted small">{t('step_of', idx + 1, steps.length)}</span>
       </div>
       <div className="dots" role="tablist">
-        {items.map((it, i) => (
-          <button key={it.id} type="button" role="tab" aria-selected={i === idx} aria-label={nm(it.variant.names)}
-            className={`dot ${exDone(it.id) ? 'done' : ''} ${i === idx ? 'current' : ''}`} onClick={() => goTo(i)} />
+        {steps.map((s, i) => (
+          <button key={s.key} type="button" role="tab" aria-selected={i === idx} aria-label={nm(s.item.variant?.names)}
+            className={`dot ${stepDone(i) ? 'done' : ''} ${i === idx ? 'current' : ''}`} onClick={() => goTo(i)} />
         ))}
       </div>
 
       <div style={{ marginTop: 16 }}>
-        <div className="media-box"><img src={mediaUrl(variant.gif_path)} alt={nm(variant.names)} /></div>
-        <h1 style={{ fontSize: 21 }}>{nm(variant.names)}</h1>
-        <div className="muted small">{t('target', `${item.sets} × ${item.reps}`)} · {t('rest_s', item.rest_seconds)}</div>
-        {active.swaps?.[item.id] && <div className="swapped"><span>{t('swapped_to', nm(variant.names))}</span></div>}
-        <button className="link" type="button" style={{ padding: '6px 0' }}
-          onClick={() => go(`/exercise/${variant.id}?item=${item.id}`)}>{t('details')} ›</button>
-        {nm(item.notes) && <p className="small">{nm(item.notes)}</p>}
-
-        <div className="set-head" style={{ marginTop: 14 }}>
-          <span>{t('set')}</span><span>{timed ? 's' : t('reps')}</span><span>{t('weight')} ({t('kg')})</span><span />
-        </div>
-        <div className="sets">
-          {sets.map((s, i) => (
-            <div key={i} className={`set ${s.done ? 'done' : ''}`}>
-              <span className="n">{i + 1}</span>
-              <input className="input" inputMode="numeric" aria-label={`${t('set')} ${i + 1} ${timed ? 's' : t('reps')}`}
-                value={s.reps} onChange={e => updateSet(i, { reps: e.target.value })} />
-              <input className="input" inputMode="decimal" placeholder="—" aria-label={`${t('set')} ${i + 1} ${t('weight')}`}
-                value={s.weight} onChange={e => updateSet(i, { weight: e.target.value })} />
-              <button className="tick" type="button" aria-pressed={s.done} aria-label={`${t('set')} ${i + 1}`} onClick={() => toggle(i)}>✓</button>
-            </div>
-          ))}
+        <div className="blockbar">
+          <span className={`badge p-${step.block.purpose}`}>{t(purposeKey(step.block.purpose))}</span>
+          <span className="muted small">{nm(step.block.names)}</span>
+          {step.block.mode === 'rounds' && <span className="muted small">{t('round_of', step.round, step.rounds)}</span>}
         </div>
 
-        {!!variant.instruction_steps?.[lang]?.length && (
+        <div className="media-box"><img src={mediaUrl(variant?.gif_path)} alt={nm(variant?.names)} /></div>
+        <h1 style={{ fontSize: 21 }}>{nm(variant?.names) || step.item.exercise_id}</h1>
+        {active.swaps?.[step.item.id] && <div className="swapped"><span>{t('swapped_to', nm(variant?.names))}</span></div>}
+        {step.item.substitution_note?.status === 'substituted' && !active.swaps?.[step.item.id] && (
+          <div className="muted small">{t('swapped_here')}</div>
+        )}
+        {nm(step.item.notes) && <p className="small">{nm(step.item.notes)}</p>}
+        {variant && (
+          <button className="link" type="button" style={{ padding: '6px 0' }}
+            onClick={() => go(`/exercise/${variant.id}?item=${step.item.id}`)}>{t('details')} ›</button>
+        )}
+
+        <div className="sets" style={{ marginTop: 8 }}>
+          {step.sets.map(set => {
+            const e = entry(set.id);
+            const timed = isTimed(set);
+            const per = setVariantName(set, step.item, nm);
+            const side = sideLabel(set, t);
+            const kind = kindLabel(set, t);
+            return (
+              <div key={set.id} className={`setcard ${e.done ? 'done' : ''}`}>
+                <div className="setline">
+                  <span className="n">{step.block.mode === 'rounds' ? step.round : set.set_number}</span>
+                  <span className="pres">{setLine(set, t)}</span>
+                  {kind && <span className="badge">{kind}</span>}
+                </div>
+                {(per || side || nm(set.notes)) && (
+                  <div className="setwhy">
+                    {per && <span className="pill eq">{per}</span>}
+                    {side && <span className="pill">{side}</span>}
+                    {nm(set.notes) && <span className="muted small">{nm(set.notes)}</span>}
+                  </div>
+                )}
+                <div className="setinputs">
+                  {track === 'full' && (
+                    <>
+                      <input className="input" inputMode="numeric" aria-label={timed ? 's' : t('reps')}
+                        value={e.reps} onChange={ev => update(set.id, { reps: ev.target.value })} />
+                      <input className="input" inputMode="decimal" placeholder="—" aria-label={t('weight')}
+                        value={e.weight} onChange={ev => update(set.id, { weight: ev.target.value })} />
+                    </>
+                  )}
+                  <button className="tick" type="button" aria-pressed={e.done}
+                    aria-label={`${t('set')} ${set.set_number}`} onClick={() => toggle(set.id)}>✓</button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {!!variant?.instruction_steps?.[lang]?.length && (
           <details className="instructions">
             <summary>{t('instructions')}</summary>
             <ol>{(variant.instruction_steps[lang] || variant.instruction_steps.en || []).map((st, i) => <li key={i}>{st}</li>)}</ol>
@@ -120,13 +155,13 @@ export function Player({ active, workout, onChange, onFinished, onDiscard }: Pro
 
         <div className="player-nav">
           <button className="btn" type="button" disabled={idx === 0} onClick={() => goTo(idx - 1)}>{t('previous')}</button>
-          {idx < items.length - 1
-            ? <button className={`btn ${exDone(item.id) ? 'primary' : ''}`} type="button" onClick={() => goTo(idx + 1)}>{t('next')}</button>
+          {idx < steps.length - 1
+            ? <button className={`btn ${stepDone(idx) ? 'primary' : ''}`} type="button" onClick={() => goTo(idx + 1)}>{t('next')}</button>
             : <button className="btn primary" type="button" onClick={() => setConfirm('finish')}>{t('finish')}</button>}
         </div>
         {saveError && <div className="error">{t('save_failed')}</div>}
         <div style={{ display: 'grid', gap: 8, marginTop: 24 }}>
-          {idx < items.length - 1 && <button className="btn" type="button" onClick={() => setConfirm('finish')}>{t('finish')}</button>}
+          {idx < steps.length - 1 && <button className="btn" type="button" onClick={() => setConfirm('finish')}>{t('finish')}</button>}
           <button className="btn danger" type="button" onClick={() => setConfirm('discard')}>{t('discard')}</button>
         </div>
       </div>
@@ -141,7 +176,7 @@ export function Player({ active, workout, onChange, onFinished, onDiscard }: Pro
 
       <dialog ref={dialog} className="confirm" onClose={() => setConfirm(null)}>
         <h1 style={{ fontSize: 19 }}>{confirm === 'discard' ? t('confirm_discard') : t('confirm_finish')}</h1>
-        <p className="muted" style={{ margin: 0 }}>{confirm === 'discard' ? t('confirm_discard_b') : t('confirm_finish_b', doneCount, allSets.length)}</p>
+        <p className="muted" style={{ margin: 0 }}>{confirm === 'discard' ? t('confirm_discard_b') : t('confirm_finish_b', allDone, allSets)}</p>
         <div className="actions">
           {confirm === 'discard'
             ? <button className="btn danger" type="button" onClick={() => { setConfirm(null); onDiscard(); }}>{t('discard')}</button>

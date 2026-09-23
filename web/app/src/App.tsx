@@ -101,7 +101,7 @@ export default function App() {
   }
   else if (page === 'exercise' && param) {
     const itemId = route.query.get('item');
-    const inActive = !!itemId && !!activeWorkout?.items.some(it => it.id === itemId);
+    const inActive = !!itemId && !!activeWorkout?.blocks.some(b => b.items.some(it => it.id === itemId));
     body = <ExerciseDetail id={param} itemId={inActive ? itemId : null}
       onSwap={inActive ? swap : null} swapped={(itemId && active?.swaps?.[itemId]) || null} />;
   }
