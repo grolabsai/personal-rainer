@@ -82,17 +82,28 @@ export function Variations({ item, exercise, dimensions, values, equipment, relo
       'equipment', ...v.attributes.map(a => `attr:${a.dimension_id}`)]))].filter(k => !differing.has(k)));
   const differs = [...differing];
 
-  // The rows narrow each other. Some ways of varying an exercise only exist inside others: choose
-  // Bodyweight for a bench press and there is no bench left to angle, so the Angle row goes away;
-  // choose Barbell + Bench and it comes back. Each row therefore offers what is still reachable
-  // under every *other* choice but its own — which also means no choice can ever trap you, since
-  // the row you are looking at never filters itself out.
-  const reachable = (skip: string) => data!.variants.filter(v => fits(v,
-    Object.fromEntries(Object.entries(chosenAttr).filter(([d]) => d !== skip)),
-    skip === 'equipment' ? '' : chosenKit));
+  // The rows narrow each other, and they do it strictly downwards. Row by row from the top:
+  // equipment first, then what each choice leaves possible below it. Choose Bodyweight for a bench
+  // press and there is no bench left to angle, so the Angle row goes away; choose Barbell and it
+  // comes back.
+  //
+  // A row is never narrowed by anything *beneath* it. Reading both ways looked tidier but made
+  // rows vanish above the one being used — pick "On the floor" and the whole equipment row would
+  // disappear, because only one kit does floor presses. Nothing above where you are clicking
+  // should ever move: it is what you would use to change your mind.
+  const ladder = ['equipment', ...dimensions.map(d => d.id)];
+  const above = (id: string) => {
+    const rank = ladder.indexOf(id);
+    return data!.variants.filter(v => fits(v,
+      Object.fromEntries(Object.entries(chosenAttr).filter(([d]) => {
+        const i = ladder.indexOf(d);
+        return i !== -1 && i < rank;
+      })),
+      rank > 0 ? chosenKit : ''));
+  };
 
   const kitCounts = new Map<string, number>();
-  for (const v of reachable('equipment')) for (const e of v.equipment) kitCounts.set(e.equipment_id, (kitCounts.get(e.equipment_id) || 0) + 1);
+  for (const v of above('equipment')) for (const e of v.equipment) kitCounts.set(e.equipment_id, (kitCounts.get(e.equipment_id) || 0) + 1);
   const kitOptions = [...kitCounts.entries()].sort((a, b) => b[1] - a[1]).map(([id]) => id);
   // Which of the typical variation's kit is *the* equipment: the implement, not the furniture. The
   // catalog's own order answers it — a bench press is a barbell exercise that also needs a bench.
@@ -102,7 +113,7 @@ export function Variations({ item, exercise, dimensions, values, equipment, relo
 
   const applicable = dimensions
     .map(d => {
-      const pool = reachable(d.id);
+      const pool = above(d.id);
       const vals = [...new Set(pool.flatMap(v => v.attributes.filter(a => a.dimension_id === d.id).map(a => a.value)))];
       const onTypical = typical?.attributes.find(a => a.dimension_id === d.id)?.value;
       // Saying nothing is itself one of the answers: most jump squats state no position and one
@@ -137,10 +148,24 @@ export function Variations({ item, exercise, dimensions, values, equipment, relo
       ? typical : bestMatch(data!.variants.filter(v => fits(v, attrs, kit)));
     if (pick && pick.id !== item.variant_id) await update(item.id, { variant_id: pick.id });
   };
+  // Because the upper rows keep offering everything, a choice up there can contradict one made
+  // further down — barbell, when "on the floor" is still set from before. The upper row wins and
+  // the contradicted choice below it is dropped, which is the same order of authority the rows are
+  // read in. Walking the ladder downwards keeps whatever still stands.
+  const prune = async (attrs: Record<string, string>, kit: string) => {
+    const kept: Record<string, string> = {};
+    for (const id of ladder.slice(1)) {
+      if (!(id in attrs)) continue;
+      if (data!.variants.some(v => fits(v, { ...kept, [id]: attrs[id] }, kit))) kept[id] = attrs[id];
+      else await setAttribute(item.id, id, null);
+    }
+    return kept;
+  };
+
   const pickKit = async (id: string) => {
     const next = id === chosenKit ? '' : id;
     await setEquipment(item.id, next || null);
-    await settle(chosenAttr, next);
+    await settle(await prune(chosenAttr, next), next);
     reload();
   };
   const pickValue = async (dimension: string, value: string) => {
@@ -148,7 +173,7 @@ export function Variations({ item, exercise, dimensions, values, equipment, relo
     await setAttribute(item.id, dimension, next || null);
     const attrs = { ...chosenAttr };
     if (next) attrs[dimension] = next; else delete attrs[dimension];
-    await settle(attrs, chosenKit);
+    await settle(await prune(attrs, chosenKit), chosenKit);
     reload();
   };
 

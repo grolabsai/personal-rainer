@@ -152,10 +152,11 @@ export function ExerciseNav({ onPick }: { onPick: (card: ExerciseCard) => void }
                 onMouseEnter={e => setPreview(previewAt(e.currentTarget, { name: nm(c.names), gif: c.gif_path, sub }))} />
               <span className="exmeta">
                 <span className="name">{nm(c.names)}<b className="vcount" title={sub}>{c.variations}</b></span>
+                {/* Equipment only. What kind of work it is, and how it can be gripped or angled,
+                    belong to the panel on the right — in a 300px row they were just noise. Kit is
+                    a list of alternatives, not a shopping list: "or", never "and". */}
                 <span className="exkit">
-                  <Icon name={`type:${c.type}`} size={13} title={t(`extype_${c.type}` as 'extype_strength')} />
-                  {/* kit is a list of alternatives, not a shopping list: "or", never "and" */}
-                  {kitOf(c.exercise_id).slice(0, 5).map((e, i) => (
+                  {kitOf(c.exercise_id).slice(0, 6).map((e, i) => (
                     <span key={e} className="kitor">
                       {i > 0 && <i className="ortick">/</i>}
                       <Icon name={e} size={13} title={nm(data!.equipment.find(x => x.id === e)?.names) || e} />
