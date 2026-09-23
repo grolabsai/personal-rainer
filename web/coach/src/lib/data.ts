@@ -10,7 +10,7 @@ export type Place = {
 };
 export type Equipment = { id: string; names: Names; sort_order: number };
 export type ProgramRow = {
-  id: string; names: Names; descriptions: Names; is_template: boolean; visibility: string;
+  id: string; names: Names; descriptions: Names; is_template: boolean; visibility: string; kind: 'program' | 'workout';
   athlete_id: string | null; location_id: string | null; schedule_mode: 'weekly' | 'dated' | 'sequence';
   cycle_weeks: number; track_mode: 'full' | 'completion' | 'none';
   goal: string | null; level: string | null; days_per_week: number | null; tags: string[];
@@ -116,7 +116,7 @@ export const adoptPlace = async (source: string) => {
 };
 
 // ---------- library ----------
-const PROGRAM = `id, names, descriptions, is_template, visibility, athlete_id, location_id,
+const PROGRAM = `id, names, descriptions, is_template, visibility, kind, athlete_id, location_id,
                  schedule_mode, cycle_weeks, track_mode, goal, level, days_per_week, tags,
                  workouts:program_workouts(id, names, position, day_of_week, week_in_cycle)`;
 
@@ -128,12 +128,21 @@ export async function loadLibrary() {
   return rows;
 }
 
-export async function createTemplate(coachId: string, names: Names) {
+export async function createTemplate(coachId: string, names: Names, kind: 'program' | 'workout' = 'program') {
   const { data, error } = await supabase.from('programs').insert({
-    coach_id: coachId, is_template: true, visibility: 'private', names, schedule_mode: 'weekly',
+    coach_id: coachId, is_template: true, visibility: 'private', names, kind,
+    schedule_mode: kind === 'workout' ? 'sequence' : 'weekly',
   }).select('id').single();
   if (error) throw error;
   return data.id as string;
+}
+
+// A standalone workout is a one-workout template, so it can be dragged into a programme's day with
+// the same copy_workout the duplicate button uses.
+export async function createStandaloneWorkout(coachId: string, names: Names) {
+  const program = await createTemplate(coachId, names, 'workout');
+  const workout = await addWorkout(program, names, null, 1);
+  return { program, workout };
 }
 
 export const updateProgram = async (id: string, patch: Record<string, unknown>) => {
@@ -304,7 +313,7 @@ export async function loadPlanSummary(programId: string) {
   const { data, error } = await supabase
     .from('program_workout_items')
     .select(`id, position, substitution_level, substitution_note, exercise_id,
-             variant:exercise_variants!program_workout_items_variant_id_fkey(id, names),
+             variant:exercise_variants!program_workout_items_variant_id_fkey(id, names, image_path),
              block:workout_blocks!inner(position, purpose, workout:program_workouts!inner(id, names, program_id))`)
     .eq('block.workout.program_id', programId)
     .order('position');
@@ -312,7 +321,7 @@ export async function loadPlanSummary(programId: string) {
   return data as unknown as {
     id: string; position: number; substitution_level: number | null;
     substitution_note: { status?: string; load_warning?: { needs_kg: number; available_kg: number } };
-    exercise_id: string; variant: { id: string; names: Names } | null;
+    exercise_id: string; variant: { id: string; names: Names; image_path: string } | null;
     block: { position: number; purpose: string; workout: { id: string; names: Names } } | null;
   }[];
 }

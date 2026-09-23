@@ -13,7 +13,7 @@ export function Library({ me }: { me: string }) {
 
   if (loading && !data) return <Loading />;
   if (error) return <Failed onRetry={reload} />;
-  const templates = data!.filter(p => p.is_template);
+  const templates = data!.filter(p => p.is_template && p.kind === 'program');
   const plans = data!.filter(p => !p.is_template);
 
   const create = async (e: React.FormEvent) => {
@@ -25,7 +25,7 @@ export function Library({ me }: { me: string }) {
 
   return (
     <>
-      <h1>{t('library')}</h1>
+      <h1>{t('programs')}</h1>
       <p className="muted">{t('library_b')}</p>
 
       <form className="inline card" style={{ margin: '16px 0' }} onSubmit={create}>

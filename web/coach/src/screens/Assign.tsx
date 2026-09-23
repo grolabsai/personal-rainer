@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { assignProgram, loadAthletes, loadLibrary, loadPlaces, loadPlanSummary, loadEnrollments } from '../lib/data';
 import { useI18n } from '../lib/i18n';
+import { mediaUrl } from '../lib/media';
 import { go } from '../lib/router';
 import { useLoad } from '../lib/useLoad';
 import { Failed, Loading } from '../components/Status';
@@ -79,10 +80,13 @@ function Resolved({ planId }: { planId: string }) {
         {data!.map(row => (
           <div key={row.id} className="card">
             <div className="between">
-              <span>
+              <span className="itemhead" style={{ gridTemplateColumns: '48px minmax(0, 1fr)' }}>
+                <img src={mediaUrl(row.variant?.image_path)} alt="" loading="lazy" />
+                <span>
                 <span className="name">{nm(row.variant?.names) || row.exercise_id}</span>
                 <span className="muted small" style={{ display: 'block' }}>
                   {nm(row.block?.workout.names)} · {t(`purpose_${row.block?.purpose}` as 'purpose_main')}
+                </span>
                 </span>
               </span>
               {row.substitution_note?.status === 'substituted' && <span className="badge l2">{t('swapped')}</span>}

@@ -54,10 +54,16 @@ vercel deploy --prod         # project: exercise-explorer (it owns admin.flowris
 ```
 
 Screens: **Athletes** (link one by the email they signed up with), **Places** (a gym or a home, with
-its kit in priority order and the heaviest weight it has), **Library** (templates → the workout
-editor: blocks, items, per-set rows), **Assign** (template + athlete + place → resolved plan, with
-every substitution and load flag listed), **Calendar** (who is following what, from when), and
-**Draft with AI**.
+its kit in priority order and the heaviest weight it has), **Workouts** (built on their own, to drag
+into a programme's days), **Programmes** (day slots you drop workouts onto), the **workout builder**,
+**Assign** (template + athlete + place → resolved plan, with every substitution and load flag
+listed), **Calendar**, and **Draft with AI**.
+
+The builder is a searchable, browsable exercise list on the left — one row per exercise, with the
+picture of how it is usually done — that you drag into a block. Choosing *how* it is done happens
+inside the block, where the sets are: only the dimensions that exercise actually varies along are
+offered (a jump rope has no bench angle), and a variation can be locked or left open for the
+athlete's place to decide. Both come from `exercise_variation_options` and `exercise_display`.
 
 The **Exercise Explorer** lives on inside this app at `/explorer/`, still behind the Basic-auth
 password (`web/coach/middleware.js`, `EXPLORER_PASSWORD`) because it browses the whole dataset with

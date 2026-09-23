@@ -62,6 +62,23 @@ const en = {
   other_side: 'The other side', other_rest: 'rests', other_hold: 'holds', other_work: 'works too',
   per_side: 'per side', set_variation: 'Variation for this set',
 
+  // Builder: the exercise list, drag and drop, variations
+  extype_strength: 'Strength', extype_stretch: 'Stretch', extype_mobility: 'Mobility', extype_cardio: 'Cardio',
+  nav_hint: (n: number) => `${n} exercises — drag one into a block, or click to add it to the one marked`,
+  nav_row_hint: 'Drag into a block, or click to add',
+  variations_n: (n: number) => `${n} variations`, one_way: 'one variation',
+  drop_here: 'Adding here', drag_here: 'Drag an exercise in from the left, or click one',
+  no_blocks: 'Add a block first — a warm-up, the main work, a finisher.',
+  variations: 'Variations', any_variation: 'Any variation — the athlete’s place decides',
+  no_variations: 'This exercise has only one way of doing it.',
+  requires_b: 'Narrow it down, or leave it open and let the place decide.',
+  locked_b: 'Locked to this exact variation.',
+  open_b: (n: number) => `${n} variations fit. Pick one to insist on it.`,
+  let_place_decide: 'Let the place decide', more_variations: (n: number) => `…and ${n} more`,
+  // Workouts library and day slots
+  workouts_lib: 'Workouts', workouts_lib_b: 'Workouts you build on their own, to drag into a programme’s days.',
+  new_workout_lib: 'New workout', programs: 'Programmes',
+  drag_workout_here: 'Drag a workout here', day_slot_empty: 'Empty',
   // AI drafting
   draft: 'Draft with AI', draft_title: 'Draft a programme',
   draft_b: 'Describe what you want. You get a draft in the same shape as any template — exercises, blocks and sets — which you then edit.',
@@ -133,6 +150,22 @@ const es: Partial<Dict> = {
   other_side: 'El otro lado', other_rest: 'descansa', other_hold: 'sostiene', other_work: 'también trabaja',
   per_side: 'por lado', set_variation: 'Variación de esta serie',
 
+  // Constructor: lista de ejercicios, arrastrar y soltar, variaciones
+  extype_strength: 'Fuerza', extype_stretch: 'Estiramiento', extype_mobility: 'Movilidad', extype_cardio: 'Cardio',
+  nav_hint: (n: number) => `${n} ejercicios — arrastra uno a un bloque o haz clic para añadirlo al marcado`,
+  nav_row_hint: 'Arrastra a un bloque o haz clic para añadir',
+  variations_n: (n: number) => `${n} variaciones`, one_way: 'una variación',
+  drop_here: 'Se añade aquí', drag_here: 'Arrastra un ejercicio desde la izquierda o haz clic en uno',
+  no_blocks: 'Añade primero un bloque: calentamiento, trabajo principal, remate.',
+  variations: 'Variaciones', any_variation: 'Cualquier variación — decide el lugar del atleta',
+  no_variations: 'Este ejercicio solo tiene una forma de hacerse.',
+  requires_b: 'Acótalo o déjalo abierto y que lo decida el lugar.',
+  locked_b: 'Fijado a esta variación exacta.',
+  open_b: (n: number) => `${n} variaciones encajan. Elige una para exigirla.`,
+  let_place_decide: 'Que decida el lugar', more_variations: (n: number) => `…y ${n} más`,
+  workouts_lib: 'Entrenamientos', workouts_lib_b: 'Entrenamientos sueltos, para arrastrarlos a los días de un programa.',
+  new_workout_lib: 'Nuevo entrenamiento', programs: 'Programas',
+  drag_workout_here: 'Arrastra un entrenamiento aquí', day_slot_empty: 'Vacío',
   // Borrador con IA
   draft: 'Borrador con IA', draft_title: 'Redactar un programa',
   draft_b: 'Describe lo que quieres. Recibes un borrador con la misma forma que cualquier plantilla —ejercicios, bloques y series— y luego lo editas.',

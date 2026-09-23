@@ -15,6 +15,7 @@ import { WorkoutEdit } from './screens/WorkoutEdit';
 import { Assign } from './screens/Assign';
 import { Calendar } from './screens/Calendar';
 import { Draft } from './screens/Draft';
+import { Workouts } from './screens/Workouts';
 
 // Follow the desktop's light/dark setting; dark is the default.
 function useSystemTheme() {
@@ -73,6 +74,7 @@ export default function App() {
   else if (here === 'places' && param) body = <PlaceEdit id={param === 'new' ? null : param} me={me.id} />;
   else if (here === 'places') body = <Places me={me.id} />;
   else if (here === 'library') body = <Library me={me.id} />;
+  else if (here === 'workouts') body = <Workouts me={me.id} />;
   else if (here === 'program' && param) body = <ProgramEdit id={param} />;
   else if (here === 'workout' && param) body = <WorkoutEdit id={param} />;
   else if (here === 'assign' && param) body = <Assign programId={param} />;
@@ -94,7 +96,8 @@ export default function App() {
       <nav className="nav">
         {tab('athletes', t('athletes'), 'athletes')}
         {tab('places', t('places'), 'places')}
-        {tab('library', t('library'), 'library')}
+        {tab('workouts', t('workouts_lib'), 'workouts')}
+        {tab('library', t('programs'), 'library')}
         {tab('calendar', t('calendar'), 'calendar')}
         {tab('draft', t('draft'), 'draft')}
         <a href="/explorer/" target="_blank" rel="noopener">{t('explorer')} ↗</a>
