@@ -212,3 +212,39 @@ changes" is visible without reading. The list above each grid names the families
 
 No new colours were invented: these are the GroLabs probe tokens, which exist for exactly this kind
 of categorical coding.
+
+## Finishing the structure
+
+Four loose ends closed after the model was in use (migrations `…0923000003` – `…0923000005`):
+
+**Integrity.** An item carries both `workout_id` and `block_id` for query convenience, and nothing
+stopped them disagreeing — an item could point at a block in another coach's workout and every
+reader would believe it. A composite foreign key on `(block_id, workout_id)` makes that impossible.
+`programs.weeks` and `programs.weeks_total` were two columns for one fact, added an hour apart; only
+`weeks_total` remains.
+
+**Every exercise has a primary muscle.** Eight had none, the plain row among them, so they fell into
+no body part. The strongest claim across their variations now fills the column, rather than a view
+inferring it each time.
+
+**Labels became attributes.** 326 variations carried a word the importer could not place. Words that
+are really attributes are now attributes — `45°` → incline, `floor` → a new position, `twist` and
+`rotation` → twisting, `high`/`low`/`front` → the styles that already existed — wherever they appear,
+so "Standing · High · Cross High" reads "Standing · High · Cross". Words that repeat what the
+variation already states were dropped. Genuinely named techniques (spiderman, maltese, clock) stay
+as labels, because that is what they are. Attributes can be filtered, required by an item and
+honoured by the resolver; labels cannot, which is why the difference matters.
+
+**`% of 1RM` means something now.** `athlete_maxes` records a tested or coach-set max;
+`athlete_exercise_maxes` estimates one from what the athlete has actually lifted (Epley, capped at
+twelve reps). `one_rm_for(athlete, exercise)` prefers the recorded value, and
+`prescribed_load_kg(set, athlete)` turns a prescription into kilos — or returns null, so the app
+shows "75%" as written rather than inventing a number.
+
+**What a workout trains.** `workout_muscle_load` rolls the prescribed sets up by muscle through the
+resolved ladder, so a coach can see that a session labelled "upper" has twelve sets landing on the
+glutes because of its finisher.
+
+Still deliberately absent: **athlete restrictions** (an injury or a movement to avoid, which the
+resolver would have to honour) and **progression rules**. Both are real, and both are a layer above
+this one rather than a change to it.
