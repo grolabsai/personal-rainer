@@ -32,7 +32,7 @@ function Harness() {
             <div className="block-card target">
               <div className="block-head"><span className="badge l1">{t('drop_here')}</span></div>
               <div className="item-card">
-                <Variations item={fakeItem(ex)} dimensions={vocab.data?.dimensions || []}
+                <Variations item={fakeItem(ex)} exercise={{ en: ex.replace(/^x-/, '').replace(/-/g, ' ') }} dimensions={vocab.data?.dimensions || []}
                   values={vocab.data?.values || []} equipment={vocab.data?.equipment || []} reload={() => {}} />
               </div>
             </div>

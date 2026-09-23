@@ -1,3 +1,4 @@
+@import './shared/variation-language.css';
 /* GroLabs tokens — values from dev-studio/apps/spec/_shell.html, not re-decided. Dark is the default. */
 :root {
   --gl-accent: #fae194; --gl-accent-hover: #fcebab; --gl-accent-on: #131316; --gl-accent-on-light: #a17914;
@@ -8,7 +9,7 @@
   --gl-success: #10b981; --gl-success-bg: rgba(16,185,129,.12); --gl-success-text: #34d399;
   --gl-danger: #ef4444; --gl-danger-bg: rgba(239,68,68,.12); --gl-danger-text: #fca5a5;
   --gl-warning: #f59e0b; --gl-warning-bg: rgba(245,158,11,.12); --gl-warning-text: #fbbf24;
-  --gl-probe-category: #5FB6A6; --gl-probe-homepage: #A98EDA; --gl-probe-site-wide: #6E9BD6;
+  --gl-probe-pdp: #E5B567; --gl-probe-search: #D98AA6; --gl-probe-category: #5FB6A6; --gl-probe-homepage: #A98EDA; --gl-probe-site-wide: #6E9BD6;
   --gl-radius-sm: 6px; --gl-radius-md: 8px; --gl-radius-lg: 12px; --gl-radius-xl: 16px;
   --gl-font: "Hanken Grotesk", -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", sans-serif;
   --gl-font-mono: ui-monospace, "SF Mono", "Cascadia Code", Menlo, monospace;

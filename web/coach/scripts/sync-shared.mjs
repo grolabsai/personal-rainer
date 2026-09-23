@@ -10,8 +10,10 @@ import { fileURLToPath } from 'node:url';
 const here = dirname(fileURLToPath(import.meta.url));
 const from = join(here, '..', '..', 'app', 'src', 'shared');
 const to = join(here, '..', 'src', 'shared');
-const files = ['equipment-icons.js', 'equipment-icons.d.ts', 'ui-icons.js', 'ui-icons.d.ts'];
-const banner = '// Copied by npm run sync:shared from web/app/src/shared — edit the original, not this.\n';
+const files = ['equipment-icons.js', 'equipment-icons.d.ts', 'ui-icons.js', 'ui-icons.d.ts',
+  'variation-language.js', 'variation-language.d.ts', 'variation-language.css'];
+const banner = f => (f.endsWith('.css') ? '/* Copied by npm run sync:shared from web/app/src/shared — edit the original. */\n'
+  : '// Copied by npm run sync:shared from web/app/src/shared — edit the original, not this.\n');
 
 try {
   await access(from);
@@ -21,5 +23,5 @@ try {
 }
 
 await mkdir(to, { recursive: true });
-for (const f of files) await writeFile(join(to, f), banner + await readFile(join(from, f), 'utf8'));
+for (const f of files) await writeFile(join(to, f), banner(f) + await readFile(join(from, f), 'utf8'));
 console.log(`synced ${files.length} shared files from web/app/src/shared`);

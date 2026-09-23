@@ -1,0 +1,38 @@
+/* The visual language for an exercise's name.
+ *
+ * A generated name like "Bench press · Incline · Close grip — Barbell + Bench" is four different
+ * kinds of fact in one string. Each kind gets a colour and keeps it everywhere in both apps, so a
+ * coach scanning a grid sees at a glance that four cards are the same movement and only the
+ * equipment differs. Colours are GroLabs tokens, never new ones.
+ *
+ *   equipment   teal     what you hold
+ *   angle       blue     bench angle
+ *   position    green    standing, lying, seated
+ *   grip        purple   overhand, neutral, underhand
+ *   grip-width  pink     close, wide
+ *   sides       gold     one arm, alternating, single leg
+ *   stance      orange   sumo, narrow
+ *   style       grey     named techniques, the catch-all
+ */
+.vname { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 5px; line-height: 1.45; }
+.vname .vex { font-weight: 600; color: var(--gl-text-strong); }
+.vpart {
+  display: inline-flex; align-items: center; gap: 4px; white-space: nowrap;
+  font-size: 11.5px; padding: 1px 7px; border-radius: 99px;
+  border: 1px solid var(--c, var(--gl-border-strong));
+  background: color-mix(in srgb, var(--c, transparent) 14%, transparent);
+}
+.vpart .icon { width: 13px; height: 13px; }
+.vpart.f-equipment  { --c: var(--gl-probe-category); }
+.vpart.f-angle      { --c: var(--gl-probe-site-wide); }
+.vpart.f-position   { --c: var(--gl-success); }
+.vpart.f-grip       { --c: var(--gl-probe-homepage); }
+.vpart.f-grip-width { --c: var(--gl-probe-search); }
+.vpart.f-sides      { --c: var(--gl-probe-pdp); }
+.vpart.f-stance     { --c: var(--gl-warning); }
+.vpart.f-style      { --c: var(--gl-text-tertiary); }
+
+/* Shared by everything on screen: dim it, so what actually differs stands out. */
+.vpart.same { opacity: .4; }
+.vname.small .vpart { font-size: 10.5px; padding: 0 6px; }
+.vname.small .vex { font-size: 12.5px; }

@@ -10,6 +10,7 @@ import { useLoad } from '../lib/useLoad';
 import { loadEquipment, loadExerciseCards } from '../lib/catalog';
 import { ExerciseNav } from '../components/ExerciseNav';
 import { Icon } from '../components/Icon';
+import { VariantName } from '../components/VariantName';
 import { Variations } from '../components/Variations';
 import { Failed, Loading } from '../components/Status';
 
@@ -18,13 +19,13 @@ const KINDS = ['warmup', 'working', 'backoff', 'drop', 'amrap'] as const;
 const SIDES = ['both', 'each', 'alternating', 'left', 'right'] as const;
 
 export function WorkoutEdit({ id }: { id: string }) {
-  const { t, nm } = useI18n();
+  const { t } = useI18n();
   const { data, error, loading, reload } = useLoad(() => loadWorkout(id), [id]);
   const vocab = useLoad(async () => ({
     ...(await loadDimensions()),
     equipment: await loadEquipment(),
-    // every exercise's own picture, so an item shows one before a variation is chosen
-    pictures: new Map((await loadExerciseCards()).map(c => [c.exercise_id, c.image_path])),
+    // every exercise's own picture and typical variation, so a dropped item starts real
+    typical: new Map((await loadExerciseCards()).map(c => [c.exercise_id, c])),
   }), []);
   // Dropping needs a target; clicking a row in the list needs one too, so touch and keyboard work.
   const [active, setActive] = useState<string | null>(null);
@@ -43,7 +44,8 @@ export function WorkoutEdit({ id }: { id: string }) {
       setActive(target);
     }
     const block = data.blocks.find(b => b.id === target);
-    await addItem(id, target, exerciseId, (block?.items.at(-1)?.position || 0) + 1);
+    await addItem(id, target, exerciseId, (block?.items.at(-1)?.position || 0) + 1,
+                  vocab.data?.typical.get(exerciseId)?.variant_id);
     reload();
   };
 
@@ -71,21 +73,20 @@ export function WorkoutEdit({ id }: { id: string }) {
           <BlockCard key={block.id} block={block} active={active === block.id}
             onActivate={() => setActive(block.id)} onDropExercise={ex => drop(block.id, ex)}
             reload={reload} dimensions={vocab.data?.dimensions || []} values={vocab.data?.values || []}
-            equipment={vocab.data?.equipment || []} pictures={vocab.data?.pictures} nm={nm} />
+            equipment={vocab.data?.equipment || []} typical={vocab.data?.typical} />
         ))}
       </div>
     </div>
   );
 }
 
-function BlockCard({ block, active, onActivate, onDropExercise, reload, dimensions, values, equipment, pictures, nm }: {
+function BlockCard({ block, active, onActivate, onDropExercise, reload, dimensions, values, equipment, typical }: {
   block: EditorBlock; active: boolean; onActivate: () => void; onDropExercise: (exerciseId: string) => void;
   reload: () => void;
   dimensions: { id: string; names: import('../lib/i18n').Names }[];
   values: { dimension_id: string; value: string; names: import('../lib/i18n').Names }[];
   equipment: { id: string; names: import('../lib/i18n').Names }[];
-  pictures?: Map<string, string>;
-  nm: (n: import('../lib/i18n').Names) => string;
+  typical?: Map<string, { image_path: string; variant_id: string }>;
 }) {
   const { t } = useI18n();
   const [over, setOver] = useState(false);
@@ -140,19 +141,18 @@ function BlockCard({ block, active, onActivate, onDropExercise, reload, dimensio
       {!block.items.length && <p className="sub">{t('drag_here')}</p>}
       {block.items.map(item => (
         <ItemCard key={item.id} item={item} block={block} reload={reload}
-          dimensions={dimensions} values={values} equipment={equipment} pictures={pictures} nm={nm} />
+          dimensions={dimensions} values={values} equipment={equipment} typical={typical} />
       ))}
     </section>
   );
 }
 
-function ItemCard({ item, block, reload, dimensions, values, equipment, pictures, nm }: {
+function ItemCard({ item, block, reload, dimensions, values, equipment, typical }: {
   item: EditorItem; block: EditorBlock; reload: () => void;
   dimensions: { id: string; names: import('../lib/i18n').Names }[];
   values: { dimension_id: string; value: string; names: import('../lib/i18n').Names }[];
   equipment: { id: string; names: import('../lib/i18n').Names }[];
-  pictures?: Map<string, string>;
-  nm: (n: import('../lib/i18n').Names) => string;
+  typical?: Map<string, { image_path: string; variant_id: string }>;
 }) {
   const { t } = useI18n();
   const [open, setOpen] = useState(false);
@@ -167,19 +167,19 @@ function ItemCard({ item, block, reload, dimensions, values, equipment, pictures
     })();
   }, [block.mode, wanted, item.sets, item.id, reload]);
 
-  const attrText = item.attributes.map(a =>
-    nm(values.find(v => v.dimension_id === a.dimension_id && v.value === a.value)?.names) || a.value).join(' · ');
-
   return (
     <div className="item-card">
       <div className="itemhead">
-        <img src={mediaUrl(item.variant?.image_path || pictures?.get(item.exercise_id))} alt="" loading="lazy" />
+        <img src={mediaUrl(item.variant?.image_path || typical?.get(item.exercise_id)?.image_path)} alt="" loading="lazy" />
         <span>
-          <span className="name">{nm(item.exercise?.names) || item.exercise_id}</span>
+          <VariantName parts={{ exercise: item.exercise?.names, attributes: item.variant?.attributes,
+            equipment: item.variant?.equipment }} values={values} equipment={equipment} />
           <span className="muted small itemsub">
-            {item.variant_locked && <Icon name="ui:lock" size={13} />}
-            {item.equipment?.map(e => <Icon key={e.equipment_id} name={e.equipment_id} size={14} />)}
-            {item.variant_locked ? nm(item.variant?.names) : (attrText || t('any_variation'))}
+            {item.variant_locked
+              ? <><Icon name="ui:lock" size={13} />{t('locked_b')}</>
+              : item.variant ? t('adapts') : t('any_variation')}
+            {!!item.equipment?.length && <span className="inline">· {t('requires')}
+              {item.equipment.map(e => <Icon key={e.equipment_id} name={e.equipment_id} size={14} />)}</span>}
           </span>
         </span>
         <span className="inline">
@@ -191,7 +191,8 @@ function ItemCard({ item, block, reload, dimensions, values, equipment, pictures
         </span>
       </div>
 
-      {open && <Variations item={item} dimensions={dimensions} values={values} equipment={equipment} reload={reload} />}
+      {open && <Variations item={item} exercise={item.exercise?.names} dimensions={dimensions}
+        values={values} equipment={equipment} reload={reload} />}
       <SetsTable item={item} block={block} reload={reload} />
     </div>
   );

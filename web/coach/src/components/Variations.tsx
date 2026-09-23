@@ -1,10 +1,13 @@
 import { useMemo } from 'react';
 import { loadTypical, loadVariants, loadVariationOptions } from '../lib/catalog';
 import { setItemAttribute, setItemEquipment, updateItem, type EditorItem } from '../lib/data';
+import { familyOf } from '../shared/variation-language.js';
 import { useI18n, type Names } from '../lib/i18n';
 import { mediaUrl } from '../lib/media';
 import { useLoad } from '../lib/useLoad';
+import { differingFamilies } from '../shared/variation-language.js';
 import { Icon } from './Icon';
+import { VariantName } from './VariantName';
 import { Loading } from './Status';
 
 // How an exercise is done, decided next to its sets.
@@ -14,8 +17,9 @@ import { Loading } from './Status';
 // it will actually take — the typical variation's — instead of the word "any". A dimension the
 // exercise never varies along is not shown at all, and one it varies along rarely sits behind
 // "more ways", so the row you see first is the row that matters.
-export function Variations({ item, dimensions, values, equipment, reload }: {
+export function Variations({ item, exercise, dimensions, values, equipment, reload }: {
   item: EditorItem;
+  exercise: Names;
   dimensions: { id: string; names: Names }[];
   values: { dimension_id: string; value: string; names: Names }[];
   equipment: { id: string; names: Names }[];
@@ -46,6 +50,12 @@ export function Variations({ item, dimensions, values, equipment, reload }: {
 
   if (loading && !data) return <Loading />;
   const total = data!.variants.length;
+  // What the shown variations have in common is dimmed; what differs keeps its colour.
+  const differing = differingFamilies(matching);
+  const shared = new Set(
+    [...new Set(matching.flatMap(v => [
+      'equipment', ...v.attributes.map(a => `attr:${a.dimension_id}`)]))].filter(k => !differing.has(k)));
+  const differs = [...differing];
 
   // Equipment options for this exercise, most used first; the typical one is the default.
   const kitCounts = new Map<string, number>();
@@ -104,6 +114,13 @@ export function Variations({ item, dimensions, values, equipment, reload }: {
 
       <p className="sub" style={{ marginTop: 10 }}>
         {item.variant_locked ? t('locked_b') : t('open_b', matching.length)}
+        {matching.length > 1 && differs.length > 0 && (
+          <> · {t('what_differs')} <span className="inline">{differs.map(f => (
+            <span key={f} className={`vpart f-${f === 'equipment' ? 'equipment' : familyOf(f.replace('attr:', ''))}`}>
+              {f === 'equipment' ? t('equipment')
+                : nm(dimensions.find(d => d.id === f.replace('attr:', ''))?.names) || f}
+            </span>))}</span></>
+        )}
       </p>
       <div className="vargrid">
         <button type="button" className={`varcard ${item.variant_locked ? '' : 'on'}`}
@@ -115,8 +132,8 @@ export function Variations({ item, dimensions, values, equipment, reload }: {
             className={`varcard ${item.variant_locked && item.variant_id === v.id ? 'on' : ''}`}
             onClick={() => updateItem(item.id, { variant_id: v.id, variant_locked: true }).then(reload)}>
             <img src={mediaUrl(v.image_path)} alt="" loading="lazy" />
-            <span className="small">{nm(v.names)}</span>
-            <span className="inline">{v.equipment.map(e => <Icon key={e.equipment_id} name={e.equipment_id} size={13} />)}</span>
+            <VariantName small parts={{ exercise, attributes: v.attributes, equipment: v.equipment }}
+              values={values} equipment={equipment} same={shared} />
           </button>
         ))}
       </div>

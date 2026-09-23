@@ -187,3 +187,28 @@ items, 38 sets. It is assigned twice, to a Gym and to a Home location, which res
 
 Rebuild it, or a variation of it, with the SQL in the migration history; the resolver is
 deterministic, so the same template and the same kit always give the same plan.
+
+## The visual language of a name
+
+A generated name — "Bench press · Incline · Close grip — Barbell + Bench" — is four kinds of fact in
+one string. Both apps render it from its parts instead, and each kind keeps its colour everywhere
+(`web/app/src/shared/variation-language.css`, synced into the coach app):
+
+| Part | Colour | Token |
+|---|---|---|
+| The movement | plain, strongest weight | — |
+| Equipment | teal | `--gl-probe-category` |
+| Bench angle | blue | `--gl-probe-site-wide` |
+| Body position | green | `--gl-success` |
+| Grip | purple | `--gl-probe-homepage` |
+| Grip width | pink | `--gl-probe-search` |
+| Arms / legs | gold | `--gl-probe-pdp` |
+| Stance | orange | `--gl-warning` |
+| Style (named techniques) | grey | `--gl-text-tertiary` |
+
+Every part carries its icon, and within a grid of variations the parts they share are dimmed while
+the ones that differ keep their colour — so "these four are the same exercise, only the equipment
+changes" is visible without reading. The list above each grid names the families that differ.
+
+No new colours were invented: these are the GroLabs probe tokens, which exist for exactly this kind
+of categorical coding.

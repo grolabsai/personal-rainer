@@ -29,7 +29,9 @@ export type EditorItem = {
   substitution_note: { status?: string; load_warning?: { needs_kg: number; available_kg: number } };
   notes: Names;
   exercise: { id: string; names: Names; type: string } | null;
-  variant: { id: string; names: Names; image_path: string } | null;
+  variant: { id: string; names: Names; image_path: string;
+             attributes: { dimension_id: string; value: string }[];
+             equipment: { equipment_id: string }[] } | null;
   attributes: { dimension_id: string; value: string }[];
   equipment: { equipment_id: string }[];
   sets: EditorSet[];
@@ -162,7 +164,8 @@ const WORKOUT = `id, program_id, position, names, notes, day_of_week, week_in_cy
     items:program_workout_items(id, position, exercise_id, variant_id, variant_locked, notes,
       substitution_level, substitution_note,
       exercise:exercises(id, names, type),
-      variant:exercise_variants!program_workout_items_variant_id_fkey(id, names, image_path),
+      variant:exercise_variants!program_workout_items_variant_id_fkey(id, names, image_path,
+        attributes:variant_attributes(dimension_id, value), equipment:variant_equipment(equipment_id)),
       attributes:item_attributes(dimension_id, value),
       equipment:item_equipment(equipment_id),
       sets:item_sets(id, set_number, kind, reps_min, reps_max, duration_seconds, reps_per_side,
@@ -218,18 +221,24 @@ export const updateBlock = async (id: string, patch: Record<string, unknown>) =>
   if (error) throw error;
 };
 
-export async function addItem(workoutId: string, blockId: string, exerciseId: string, position: number) {
+export async function addItem(workoutId: string, blockId: string, exerciseId: string,
+                              position: number, typicalVariantId?: string | null) {
+  // A dropped exercise arrives as its typical variation — the one the catalog says is usual, and
+  // the one on the card — so the coach starts from something real instead of a blank. It is not
+  // locked, so the athlete's place can still change it; locking is a deliberate act.
   const { data, error } = await supabase.from('program_workout_items')
-    .insert({ workout_id: workoutId, block_id: blockId, position, exercise_id: exerciseId })
+    .insert({ workout_id: workoutId, block_id: blockId, position, exercise_id: exerciseId,
+              variant_id: typicalVariantId ?? null })
     .select('id').single();
   if (error) throw error;
-  // A new exercise starts with three working sets of ten: the common case, edited from there.
+  // Three sets of twelve, ninety seconds apart: the most common prescription there is.
   const { error: e2 } = await supabase.from('item_sets').insert([1, 2, 3].map(n => ({
-    item_id: data.id, set_number: n, reps_min: 10, rest_seconds: 90,
+    item_id: data.id, set_number: n, reps_min: 12, rest_seconds: 90,
   })));
   if (e2) throw e2;
   return data.id as string;
 }
+
 export const updateItem = async (id: string, patch: Record<string, unknown>) => {
   const { error } = await supabase.from('program_workout_items').update(patch).eq('id', id);
   if (error) throw error;
@@ -240,7 +249,7 @@ export async function addSet(itemId: string, from: EditorSet | undefined, setNum
     ? { kind: from.kind, reps_min: from.reps_min, reps_max: from.reps_max, duration_seconds: from.duration_seconds,
         reps_per_side: from.reps_per_side, load_kg: from.load_kg, rest_seconds: from.rest_seconds,
         side: from.side, other_side: from.other_side, variant_id: from.variant_id }
-    : { reps_min: 10, rest_seconds: 90 };
+    : { reps_min: 12, rest_seconds: 90 };
   const { error } = await supabase.from('item_sets').insert({ item_id: itemId, set_number: setNumber, ...base });
   if (error) throw error;
 }
@@ -325,7 +334,8 @@ export async function loadPlanSummary(programId: string) {
   const { data, error } = await supabase
     .from('program_workout_items')
     .select(`id, position, substitution_level, substitution_note, exercise_id,
-             variant:exercise_variants!program_workout_items_variant_id_fkey(id, names, image_path),
+             variant:exercise_variants!program_workout_items_variant_id_fkey(id, names, image_path,
+        attributes:variant_attributes(dimension_id, value), equipment:variant_equipment(equipment_id)),
              block:workout_blocks!inner(position, purpose, workout:program_workouts!inner(id, names, program_id))`)
     .eq('block.workout.program_id', programId)
     .order('position');
