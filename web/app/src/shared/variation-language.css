@@ -6,8 +6,7 @@
  * equipment differs. Colours are GroLabs tokens, never new ones.
  *
  *   equipment   teal     what you hold
- *   angle       blue     bench angle
- *   position    green    standing, lying, seated
+ *   position    blue     standing, lying, seated — and the angle it is tilted at
  *   grip        purple   overhand, neutral, underhand
  *   grip-width  pink     close, wide
  *   sides       gold     one arm, alternating, single leg
@@ -16,21 +15,32 @@
  */
 .vname { display: inline-flex; flex-wrap: wrap; align-items: center; gap: 5px; line-height: 1.45; }
 .vname .vex { font-weight: 600; color: var(--gl-text-strong); }
+/* The family colour is a variable, set by the f-* class alone, so anything can carry it: the parts
+   of a name, and the pills you choose those parts with. */
+.f-equipment  { --c: var(--gl-probe-category); }
+.f-position   { --c: var(--gl-probe-site-wide); }
+.f-grip       { --c: var(--gl-probe-homepage); }
+.f-grip-width { --c: var(--gl-probe-search); }
+.f-sides      { --c: var(--gl-probe-pdp); }
+.f-stance     { --c: var(--gl-warning); }
+.f-style      { --c: var(--gl-text-tertiary); }
+
 .vpart {
   display: inline-flex; align-items: center; gap: 4px; white-space: nowrap;
   font-size: 11.5px; padding: 1px 7px; border-radius: 99px;
   border: 1px solid var(--c, var(--gl-border-strong));
   background: color-mix(in srgb, var(--c, transparent) 14%, transparent);
+  /* The ink carries the colour too. A faint wash behind grey text made every family look alike —
+     teal equipment and green position were indistinguishable at pill size. */
+  color: color-mix(in srgb, var(--c, var(--gl-text)) 72%, var(--gl-text));
 }
 .vpart .icon { width: 13px; height: 13px; }
-.vpart.f-equipment  { --c: var(--gl-probe-category); }
-.vpart.f-angle      { --c: var(--gl-probe-site-wide); }
-.vpart.f-position   { --c: var(--gl-success); }
-.vpart.f-grip       { --c: var(--gl-probe-homepage); }
-.vpart.f-grip-width { --c: var(--gl-probe-search); }
-.vpart.f-sides      { --c: var(--gl-probe-pdp); }
-.vpart.f-stance     { --c: var(--gl-warning); }
-.vpart.f-style      { --c: var(--gl-text-tertiary); }
+/* Only five probe colours exist and there are eight families, so two pairs sit close together:
+   teal/green and gold/orange. Equipment — the fact a coach reads first, and the one that made the
+   pair confusable — is filled instead of outlined, which separates it by weight, not by a new
+   colour. No colour is re-decided here; they are the GroLabs probe tokens. */
+.vpart.f-equipment { background: var(--gl-probe-category); color: #131316; border-color: var(--gl-probe-category); }
+.vpart.f-equipment .icon { opacity: .85; }
 
 /* Shared by everything on screen: dim it, so what actually differs stands out. */
 .vpart.same { opacity: .4; }

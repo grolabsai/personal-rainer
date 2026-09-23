@@ -29,7 +29,7 @@ export type EditorItem = {
   substitution_note: { status?: string; load_warning?: { needs_kg: number; available_kg: number } };
   notes: Names;
   exercise: { id: string; names: Names; type: string } | null;
-  variant: { id: string; names: Names; image_path: string;
+  variant: { id: string; names: Names; image_path: string; gif_path: string;
              attributes: { dimension_id: string; value: string }[];
              equipment: { equipment_id: string }[] } | null;
   attributes: { dimension_id: string; value: string }[];
@@ -164,7 +164,7 @@ const WORKOUT = `id, program_id, position, names, notes, day_of_week, week_in_cy
     items:program_workout_items(id, position, exercise_id, variant_id, variant_locked, notes,
       substitution_level, substitution_note,
       exercise:exercises(id, names, type),
-      variant:exercise_variants!program_workout_items_variant_id_fkey(id, names, image_path,
+      variant:exercise_variants!program_workout_items_variant_id_fkey(id, names, image_path, gif_path,
         attributes:variant_attributes(dimension_id, value), equipment:variant_equipment(equipment_id)),
       attributes:item_attributes(dimension_id, value),
       equipment:item_equipment(equipment_id),
@@ -237,6 +237,18 @@ export async function addItem(workoutId: string, blockId: string, exerciseId: st
   })));
   if (e2) throw e2;
   return data.id as string;
+}
+
+// Reorder inside a block. Position is unique per block, so the two rows swap through a free slot
+// rather than both claiming the same number for an instant.
+export async function moveItem(items: EditorItem[], id: string, dir: -1 | 1) {
+  const i = items.findIndex(s => s.id === id);
+  const j = i + dir;
+  if (i < 0 || j < 0 || j >= items.length) return;
+  const a = items[i], b = items[j];
+  await updateItem(a.id, { position: -1 });
+  await updateItem(b.id, { position: a.position });
+  await updateItem(a.id, { position: b.position });
 }
 
 export const updateItem = async (id: string, patch: Record<string, unknown>) => {

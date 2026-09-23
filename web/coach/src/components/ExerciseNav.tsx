@@ -3,7 +3,7 @@ import { loadEquipment, loadEquipmentByExercise, loadExerciseCards, loadRegions,
 import { useI18n } from '../lib/i18n';
 import { mediaUrl } from '../lib/media';
 import { useLoad } from '../lib/useLoad';
-import { HoverPreview, type Preview } from './HoverPreview';
+import { HoverPreview, previewAt, type Preview } from './HoverPreview';
 import { Icon } from './Icon';
 import { Loading } from './Status';
 
@@ -41,9 +41,16 @@ export function ExerciseNav({ onPick }: { onPick: (card: ExerciseCard) => void }
     [afterRegion, type]);
   const shown = useMemo(() => {
     const q = term.trim().toLowerCase();
+    // Coaches search for what they say, not for what the catalog calls it: "bulgarian", "skull
+    // crusher", "glutes". Aliases and the muscle group are searched alongside the name, so the
+    // word that failed is not the coach's problem to guess around.
+    const hit = (c: ExerciseCard) => (c.names?.[lang] || c.names?.en || '').toLowerCase().includes(q)
+      || c.exercise_id.includes(q)
+      || (c.muscle_group || '').includes(q)
+      || (c.aliases || []).some(a => a.toLowerCase().includes(q));
     return afterType
       .filter(c => !equipment || kitOf(c.exercise_id).includes(equipment))
-      .filter(c => !q || (c.names?.[lang] || c.names?.en || '').toLowerCase().includes(q) || c.exercise_id.includes(q));
+      .filter(c => !q || hit(c));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [afterType, equipment, term, lang, data]);
 
@@ -129,32 +136,38 @@ export function ExerciseNav({ onPick }: { onPick: (card: ExerciseCard) => void }
 
       <p className="sub navcount">{t('nav_hint', shown.length)}</p>
       <div className="exlist">
-        {shown.map(c => (
-          <button key={c.exercise_id} className="exrow" type="button" draggable
-            onDragStart={e => {
-              e.dataTransfer.setData('text/x-exercise', c.exercise_id);
-              e.dataTransfer.effectAllowed = 'copy';
-            }}
-            onClick={() => onPick(c)} title={t('nav_row_hint')}
-            onMouseEnter={e => setPreview({
-              name: nm(c.names), gif: c.gif_path, top: e.currentTarget.getBoundingClientRect().top,
-              sub: c.variations > 1 ? t('variations_n', c.variations) : t('one_way'),
-            })}
-            onMouseLeave={() => setPreview(null)}
-            onFocus={e => setPreview({ name: nm(c.names), gif: c.gif_path, top: e.currentTarget.getBoundingClientRect().top })}
-            onBlur={() => setPreview(null)}>
-            <img src={mediaUrl(c.image_path)} alt="" loading="lazy" />
-            <span>
-              <span className="name">{nm(c.names)}</span>
-              <span className="exkit">
-                <Icon name={`type:${c.type}`} size={13} />
-                {kitOf(c.exercise_id).slice(0, 4).map(e => <Icon key={e} name={e} size={13} />)}
-                <span className="muted small">{c.variations > 1 ? t('variations_n', c.variations) : t('one_way')}</span>
+        {shown.map(c => {
+          const sub = c.variations > 1 ? t('variations_n', c.variations) : t('one_way');
+          return (
+            // Dragging still works — the handle says so — but the + is the ordinary way in: one
+            // click drops the exercise at the bottom of the block being built.
+            <div key={c.exercise_id} className="exrow" draggable
+              onDragStart={e => {
+                e.dataTransfer.setData('text/x-exercise', c.exercise_id);
+                e.dataTransfer.effectAllowed = 'copy';
+              }}
+              onMouseLeave={() => setPreview(null)}>
+              <span className="grab" title={t('nav_row_hint')}><Icon name="ui:drag" size={14} /></span>
+              <img src={mediaUrl(c.image_path)} alt="" loading="lazy"
+                onMouseEnter={e => setPreview(previewAt(e.currentTarget, { name: nm(c.names), gif: c.gif_path, sub }))} />
+              <span className="exmeta">
+                <span className="name">{nm(c.names)}<b className="vcount" title={sub}>{c.variations}</b></span>
+                <span className="exkit">
+                  <Icon name={`type:${c.type}`} size={13} title={t(`extype_${c.type}` as 'extype_strength')} />
+                  {/* kit is a list of alternatives, not a shopping list: "or", never "and" */}
+                  {kitOf(c.exercise_id).slice(0, 5).map((e, i) => (
+                    <span key={e} className="kitor">
+                      {i > 0 && <i className="ortick">/</i>}
+                      <Icon name={e} size={13} title={nm(data!.equipment.find(x => x.id === e)?.names) || e} />
+                    </span>
+                  ))}
+                </span>
               </span>
-            </span>
-            <Icon name="ui:drag" size={14} />
-          </button>
-        ))}
+              <button className="addbtn" type="button" aria-label={t('add_to_block')} title={t('add_to_block')}
+                onClick={() => onPick(c)}><Icon name="ui:plus" size={16} /></button>
+            </div>
+          );
+        })}
       </div>
       <HoverPreview preview={preview} />
     </aside>

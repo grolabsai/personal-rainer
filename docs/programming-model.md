@@ -197,18 +197,34 @@ one string. Both apps render it from its parts instead, and each kind keeps its 
 | Part | Colour | Token |
 |---|---|---|
 | The movement | plain, strongest weight | — |
-| Equipment | teal | `--gl-probe-category` |
-| Bench angle | blue | `--gl-probe-site-wide` |
-| Body position | green | `--gl-success` |
+| Equipment | teal, **filled** | `--gl-probe-category` |
+| Body position **and angle** | blue | `--gl-probe-site-wide` |
 | Grip | purple | `--gl-probe-homepage` |
 | Grip width | pink | `--gl-probe-search` |
 | Arms / legs | gold | `--gl-probe-pdp` |
 | Stance | orange | `--gl-warning` |
 | Style (named techniques) | grey | `--gl-text-tertiary` |
 
+Two corrections after the first grid was built. The ink carries the colour as well as the border: a
+faint wash behind grey text made every family look alike. And equipment is **filled** rather than
+outlined, because only five probe colours exist for eight families and teal sat next to the green
+position was using — separating the most important fact by weight costs no new colour.
+
+**Body position and angle are one fact**, the posture and how far it is tilted, so they share the
+colour and one row in the editor and read as "Lying · Incline". An incline push-up tilts with no
+bench anywhere; what holds you at that angle is equipment's job to say, which is why the dimension
+is "Angle" and why a bench is now listed as equipment wherever a variation needs one.
+
 Every part carries its icon, and within a grid of variations the parts they share are dimmed while
 the ones that differ keep their colour — so "these four are the same exercise, only the equipment
 changes" is visible without reading. The list above each grid names the families that differ.
+
+The same colours run the editor's choices: one row of pills per way of varying the exercise, and
+the pill you press is the colour of the word it puts into the name. A row appears only when there
+is a choice in it — a jump rope offers nothing, so it shows nothing — and the rows narrow each
+other, so choosing Bodyweight for a bench press takes the Angle row away and choosing Barbell
+brings it back. Each row offers what is reachable under every choice *but its own*, which means no
+choice can trap you.
 
 No new colours were invented: these are the GroLabs probe tokens, which exist for exactly this kind
 of categorical coding.

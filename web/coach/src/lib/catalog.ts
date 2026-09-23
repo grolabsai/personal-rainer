@@ -8,12 +8,13 @@ export type ExerciseCard = {
   exercise_id: string; names: Names; type: string; movement_pattern: string | null;
   region: string | null; muscle_group: string | null; is_canonical: boolean;
   variant_id: string; image_path: string; gif_path: string; variations: number;
+  aliases: string[];
 };
 
 export type VariationOption = { dimension_id: string; value: string; variants: number };
 
 export type VariantCard = {
-  id: string; names: Names; image_path: string;
+  id: string; names: Names; image_path: string; gif_path: string;
   attributes: { dimension_id: string; value: string }[];
   equipment: { equipment_id: string }[];
 };
@@ -23,7 +24,7 @@ let cards: Promise<ExerciseCard[]> | null = null;
 export function loadExerciseCards(): Promise<ExerciseCard[]> {
   cards ??= (async () => {
     const { data, error } = await supabase.from('exercise_display')
-      .select('exercise_id, names, type, movement_pattern, region, muscle_group, is_canonical, variant_id, image_path, gif_path, variations')
+      .select('exercise_id, names, type, movement_pattern, region, muscle_group, is_canonical, variant_id, image_path, gif_path, variations, aliases')
       .order('is_canonical', { ascending: false });
     if (error) throw error;
     return data as unknown as ExerciseCard[];
@@ -51,7 +52,7 @@ export async function loadVariationOptions(exerciseId: string) {
 
 export async function loadVariants(exerciseId: string) {
   const { data, error } = await supabase.from('exercise_variants')
-    .select('id, names, image_path, attributes:variant_attributes(dimension_id, value), equipment:variant_equipment(equipment_id)')
+    .select('id, names, image_path, gif_path, attributes:variant_attributes(dimension_id, value), equipment:variant_equipment(equipment_id)')
     .eq('exercise_id', exerciseId).is('duplicate_of', null).order('id');
   if (error) throw error;
   return data as unknown as VariantCard[];

@@ -3,8 +3,11 @@
 // Same 24×24 grid, 1.6 stroke, no fill — a new id falls back to the bodyweight figure.
 export const EQUIPMENT_ICONS = {
   bodyweight: '<circle cx="12" cy="5" r="2.4"/><path d="M12 7.5v6m0 0-3 6m3-6 3 6M6.5 10h11"/>',
-  dumbbell: '<path d="M4 9v6M7 7.5v9M17 7.5v9M20 9v6M7 12h10"/>',
-  barbell: '<path d="M3 9v6M5.5 7.5v9M18.5 7.5v9M21 9v6M5.5 12h13"/>',
+  // A dumbbell is short and held in one hand; a barbell is long and runs off both sides. They are
+  // drawn as different silhouettes, not as the same bar at two widths, because a coach reads the
+  // shape and never the pixel count: round bells against square plates, stubby against full width.
+  dumbbell: '<circle cx="7" cy="12" r="3.6"/><circle cx="17" cy="12" r="3.6"/><path d="M10.6 12h2.8"/>',
+  barbell: '<path d="M2 12h20"/><path d="M5 8.5v7M7.5 7v10M16.5 7v10M19 8.5v7"/>',
   'ez-bar': '<path d="M3 9v6M5.5 8v8M18.5 8v8M21 9v6M5.5 12h3l1.5-2 2 4 2-4 1.5 2h3"/>',
   'trap-bar': '<path d="M3 9v6M21 9v6M6 8h12l-2 4 2 4H6l2-4z"/>',
   'cambered-bar': '<path d="M3 9v6M21 9v6M5.5 11h3v4h7v-4h3"/>',

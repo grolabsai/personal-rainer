@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import {
-  addBlock, addItem, addSet, deleteRow, loadDimensions, loadWorkout, updateBlock,
+  addBlock, addItem, addSet, deleteRow, loadDimensions, loadWorkout, moveItem, updateBlock,
   updateSet, updateWorkout, type EditorBlock, type EditorItem, type EditorSet,
 } from '../lib/data';
 import { useI18n } from '../lib/i18n';
@@ -9,6 +9,7 @@ import { mediaUrl } from '../lib/media';
 import { useLoad } from '../lib/useLoad';
 import { loadEquipment, loadExerciseCards } from '../lib/catalog';
 import { ExerciseNav } from '../components/ExerciseNav';
+import { HoverPreview, previewAt, type Preview } from '../components/HoverPreview';
 import { Icon } from '../components/Icon';
 import { VariantName } from '../components/VariantName';
 import { Variations } from '../components/Variations';
@@ -29,6 +30,9 @@ export function WorkoutEdit({ id }: { id: string }) {
   }), []);
   // Dropping needs a target; clicking a row in the list needs one too, so touch and keyboard work.
   const [active, setActive] = useState<string | null>(null);
+  // The exercise just added opens its variations, because choosing how it is done is the next
+  // thing a coach does — and the grid of pictures is the fastest way to say which one you meant.
+  const [justAdded, setJustAdded] = useState<string | null>(null);
 
   useEffect(() => { if (data?.blocks.length && !active) setActive(data.blocks[0].id); }, [data, active]);
 
@@ -44,8 +48,9 @@ export function WorkoutEdit({ id }: { id: string }) {
       setActive(target);
     }
     const block = data.blocks.find(b => b.id === target);
-    await addItem(id, target, exerciseId, (block?.items.at(-1)?.position || 0) + 1,
-                  vocab.data?.typical.get(exerciseId)?.variant_id);
+    const item = await addItem(id, target, exerciseId, (block?.items.at(-1)?.position || 0) + 1,
+                               vocab.data?.typical.get(exerciseId)?.variant_id);
+    setJustAdded(item);
     reload();
   };
 
@@ -73,20 +78,20 @@ export function WorkoutEdit({ id }: { id: string }) {
           <BlockCard key={block.id} block={block} active={active === block.id}
             onActivate={() => setActive(block.id)} onDropExercise={ex => drop(block.id, ex)}
             reload={reload} dimensions={vocab.data?.dimensions || []} values={vocab.data?.values || []}
-            equipment={vocab.data?.equipment || []} typical={vocab.data?.typical} />
+            equipment={vocab.data?.equipment || []} typical={vocab.data?.typical} justAdded={justAdded} />
         ))}
       </div>
     </div>
   );
 }
 
-function BlockCard({ block, active, onActivate, onDropExercise, reload, dimensions, values, equipment, typical }: {
+function BlockCard({ block, active, onActivate, onDropExercise, reload, dimensions, values, equipment, typical, justAdded }: {
   block: EditorBlock; active: boolean; onActivate: () => void; onDropExercise: (exerciseId: string) => void;
-  reload: () => void;
+  reload: () => void; justAdded: string | null;
   dimensions: { id: string; names: import('../lib/i18n').Names }[];
   values: { dimension_id: string; value: string; names: import('../lib/i18n').Names }[];
   equipment: { id: string; names: import('../lib/i18n').Names }[];
-  typical?: Map<string, { image_path: string; variant_id: string }>;
+  typical?: Map<string, { image_path: string; gif_path: string; variant_id: string }>;
 }) {
   const { t } = useI18n();
   const [over, setOver] = useState(false);
@@ -140,22 +145,25 @@ function BlockCard({ block, active, onActivate, onDropExercise, reload, dimensio
 
       {!block.items.length && <p className="sub">{t('drag_here')}</p>}
       {block.items.map(item => (
-        <ItemCard key={item.id} item={item} block={block} reload={reload}
+        <ItemCard key={item.id} item={item} block={block} reload={reload} openAt={justAdded === item.id}
+          move={dir => moveItem(block.items, item.id, dir).then(reload)}
           dimensions={dimensions} values={values} equipment={equipment} typical={typical} />
       ))}
     </section>
   );
 }
 
-function ItemCard({ item, block, reload, dimensions, values, equipment, typical }: {
+function ItemCard({ item, block, reload, dimensions, values, equipment, typical, openAt, move }: {
   item: EditorItem; block: EditorBlock; reload: () => void;
+  openAt: boolean; move: (dir: -1 | 1) => void;
   dimensions: { id: string; names: import('../lib/i18n').Names }[];
   values: { dimension_id: string; value: string; names: import('../lib/i18n').Names }[];
   equipment: { id: string; names: import('../lib/i18n').Names }[];
-  typical?: Map<string, { image_path: string; variant_id: string }>;
+  typical?: Map<string, { image_path: string; gif_path: string; variant_id: string }>;
 }) {
-  const { t } = useI18n();
-  const [open, setOpen] = useState(false);
+  const { t, nm } = useI18n();
+  const [open, setOpen] = useState(openAt);
+  const [preview, setPreview] = useState<Preview>(null);
   const wanted = block.mode === 'rounds' ? (block.rounds || item.sets.length) : item.sets.length;
 
   // In a rounds block a set is a round, so the count follows the block rather than being edited.
@@ -167,10 +175,20 @@ function ItemCard({ item, block, reload, dimensions, values, equipment, typical 
     })();
   }, [block.mode, wanted, item.sets, item.id, reload]);
 
+  const card = typical?.get(item.exercise_id);
   return (
     <div className="item-card">
-      <div className="itemhead">
-        <img src={mediaUrl(item.variant?.image_path || typical?.get(item.exercise_id)?.image_path)} alt="" loading="lazy" />
+      <div className="itemhead" onMouseLeave={() => setPreview(null)}>
+        {/* Order inside the block is the order it is done in, so it is moved here, not dragged. */}
+        <span className="movers">
+          <button className="movebtn" type="button" aria-label={t('up')} title={t('up')}
+            onClick={() => move(-1)}><Icon name="ui:up" size={13} /></button>
+          <button className="movebtn" type="button" aria-label={t('down')} title={t('down')}
+            onClick={() => move(1)}><Icon name="ui:down" size={13} /></button>
+        </span>
+        <img src={mediaUrl(item.variant?.image_path || card?.image_path)} alt="" loading="lazy"
+          onMouseEnter={e => setPreview(previewAt(e.currentTarget, {
+            name: nm(item.exercise?.names), gif: item.variant?.gif_path || card?.gif_path || '' }))} />
         <span>
           <VariantName parts={{ exercise: item.exercise?.names, attributes: item.variant?.attributes,
             equipment: item.variant?.equipment }} values={values} equipment={equipment} />
@@ -194,6 +212,7 @@ function ItemCard({ item, block, reload, dimensions, values, equipment, typical 
       {open && <Variations item={item} exercise={item.exercise?.names} dimensions={dimensions}
         values={values} equipment={equipment} reload={reload} />}
       <SetsTable item={item} block={block} reload={reload} />
+      <HoverPreview preview={preview} />
     </div>
   );
 }

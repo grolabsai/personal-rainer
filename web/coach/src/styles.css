@@ -213,14 +213,27 @@ select { min-height: 38px; padding: 6px 10px; border-radius: var(--gl-radius-md)
 .builder { display: grid; grid-template-columns: 340px minmax(0, 1fr); gap: 22px; align-items: start; }
 .exnav { position: sticky; top: 8px; max-height: calc(100vh - 40px); display: flex; flex-direction: column; }
 .exlist { overflow: auto; border: 1px solid var(--gl-border); border-radius: var(--gl-radius-md); }
-.exrow { display: grid; grid-template-columns: 40px minmax(0, 1fr); gap: 8px; align-items: center; width: 100%; text-align: left; background: none; border: 0; border-bottom: 1px solid var(--gl-border); padding: 6px 8px; cursor: grab; color: inherit; font: inherit; }
+.exrow { display: grid; grid-template-columns: 16px 44px minmax(0, 1fr) 34px; gap: 8px; align-items: center; border-bottom: 1px solid var(--gl-border); padding: 6px 8px; }
 .exrow:hover { background: var(--gl-surface-hover); }
-.exrow:active { cursor: grabbing; }
-.exrow img { width: 40px; height: 40px; border-radius: var(--gl-radius-sm); background: #fff; }
-.exrow .name { display: block; font-size: 13.5px; font-weight: 600; color: var(--gl-text-strong); }
+.exrow .grab { color: var(--gl-text-muted); cursor: grab; display: flex; }
+.exrow:active .grab { cursor: grabbing; }
+.exrow img { width: 44px; height: 44px; border-radius: var(--gl-radius-sm); background: #fff; }
+.exrow .exmeta { min-width: 0; }
+.exrow .name { display: flex; align-items: baseline; gap: 6px; font-size: 13.5px; font-weight: 600; color: var(--gl-text-strong); }
+/* How many ways there are to do it: a number, not a sentence — the row has no width to spare. */
+.vcount { margin-left: auto; font-family: var(--gl-font-mono); font-size: 10.5px; font-weight: 400; color: var(--gl-text-tertiary); }
+.addbtn { display: grid; place-items: center; width: 30px; height: 30px; border-radius: var(--gl-radius-sm); border: 1px solid var(--gl-border-strong); background: none; color: var(--gl-text-secondary); cursor: pointer; }
+.addbtn:hover { background: var(--gl-accent); border-color: var(--gl-accent); color: var(--gl-accent-on); }
+/* Kit is a list of alternatives — "dumbbell or barbell" — so the icons are separated by a slash. */
+.kitor { display: inline-flex; align-items: center; gap: 3px; }
+.kitor .ortick { font-style: normal; color: var(--gl-text-muted); font-size: 10px; }
 .block-card.target { border-color: var(--gl-accent-ink); }
 .block-card.over { background: var(--gl-surface-hover); outline: 2px dashed var(--gl-accent-ink); outline-offset: 2px; }
-.itemhead { display: grid; grid-template-columns: 48px minmax(0, 1fr) auto; gap: 10px; align-items: center; }
+.itemhead { display: grid; grid-template-columns: 20px 48px minmax(0, 1fr) auto; gap: 10px; align-items: center; }
+.movers { display: grid; gap: 2px; }
+.movebtn { display: grid; place-items: center; width: 20px; height: 18px; padding: 0; border-radius: 4px; border: 1px solid var(--gl-border); background: none; color: var(--gl-text-tertiary); cursor: pointer; }
+.movebtn:hover { background: var(--gl-surface-hover); color: var(--gl-text); }
+.itemhead img { cursor: zoom-in; }
 .itemhead img { width: 48px; height: 48px; border-radius: var(--gl-radius-sm); background: #fff; }
 .titlefield { font-size: 22px; font-weight: 700; border: 0; padding: 0; background: none; max-width: 480px; }
 .variations { border-left: 3px solid var(--gl-probe-homepage); background: color-mix(in srgb, var(--gl-probe-homepage) 7%, transparent); border-radius: var(--gl-radius-sm); padding: 10px; margin: 8px 0; }
@@ -245,19 +258,32 @@ select { min-height: 38px; padding: 6px 10px; border-radius: var(--gl-radius-md)
 .searchbox .input { border: 0; background: none; padding-left: 0; }
 .searchbox .icon { color: var(--gl-text-tertiary); }
 .navcount { margin: 10px 0 4px; }
-.exrow { grid-template-columns: 44px minmax(0, 1fr) 16px; }
-.exrow img { width: 44px; height: 44px; }
-.exkit { display: flex; align-items: center; gap: 4px; color: var(--gl-text-tertiary); }
+.exkit { display: flex; align-items: center; gap: 4px; color: var(--gl-text-tertiary); min-width: 0; }
+.exrow .name > :first-child, .exkit { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.exrow .name { white-space: nowrap; }
 .itemsub { display: flex; align-items: center; gap: 5px; }
 
-/* One field per way of varying an exercise, equipment first */
-.varfields { display: flex; flex-wrap: wrap; gap: 10px; }
-.varfield { display: grid; gap: 3px; }
-.varlabel { display: flex; align-items: center; gap: 5px; font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--gl-text-tertiary); }
-.varfield select { min-width: 190px; }
+/* One row of pills per way of varying an exercise, equipment first. Pills, not dropdowns: the
+   alternatives are the point, and pressing one changes the pictures below and the card above. */
+.varrow { display: grid; grid-template-columns: 116px minmax(0, 1fr); gap: 10px; align-items: baseline; margin-bottom: 6px; }
+.varlabel { display: flex; align-items: center; gap: 5px; font-size: 11px; text-transform: uppercase; letter-spacing: .05em; color: var(--gl-text-tertiary); padding-top: 7px; }
+.varrow .chip { min-height: 30px; font-size: 12px; padding: 2px 9px; }
+/* The pill you press is the colour of the word it puts into the name — not a generic green, which
+   made equipment and body position look like the same kind of fact. --c comes from the row's f-* */
+.varrow .chip[aria-pressed="true"] { border-color: var(--c); background: color-mix(in srgb, var(--c) 16%, transparent); color: color-mix(in srgb, var(--c) 75%, var(--gl-text)); }
+.varrow.f-equipment .chip[aria-pressed="true"] { background: var(--c); color: #131316; }
+/* The value it already has, because nobody insisted: on, but quieter than a deliberate choice. */
+.varrow .chip.dflt, .varrow.f-equipment .chip.dflt { border-color: var(--c); background: transparent; color: var(--gl-text); }
+.varrow .chip.dflt .icon { color: var(--c); }
+.varrow .chip.dflt .count { text-transform: uppercase; letter-spacing: .05em; font-size: 9.5px; }
 .moreways { margin-top: 10px; }
 .moreways summary { cursor: pointer; font-size: 12.5px; color: var(--gl-text-secondary); }
-.varany { display: grid; place-items: center; gap: 4px; min-height: 76px; font-size: 12px; color: var(--gl-text-secondary); text-align: center; }
+.varcount { margin-top: 10px; }
+.unlock { font-size: 12px; padding: 0 6px; text-decoration: underline; }
+.varcard { position: relative; }
+.varcard.on { border-color: var(--gl-accent-ink); background: color-mix(in srgb, var(--gl-accent) 14%, transparent); }
+.varmark { position: absolute; top: 4px; left: 4px; display: inline-flex; align-items: center; gap: 3px; font-family: var(--gl-font-mono); font-size: 9px; letter-spacing: .05em; text-transform: uppercase; padding: 1px 5px; border-radius: 99px; background: var(--gl-accent); color: var(--gl-accent-on); }
+.varcard img { cursor: zoom-in; }
 
 /* The set table stays inside its card */
 .settable { display: block; overflow-x: auto; white-space: nowrap; }

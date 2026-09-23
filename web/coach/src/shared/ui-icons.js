@@ -20,20 +20,22 @@ export const UI_ICONS = {
   'region:foot': '<path d="M6 5c3 0 4 3 4 6l2 5h5a2 2 0 0 1 0 4H8a3 3 0 0 1-3-3V5z"/>',
 
   // What kind of thing it is
-  'type:strength': '<path d="M4 9v6M7 7.5v9M17 7.5v9M20 9v6M7 12h10"/>',
+  // Not a dumbbell: this sits next to the equipment icons, and two bars in a row read as "you need
+  // two of them". A flexed arm says "this is strength work" and cannot be mistaken for kit.
+  'type:strength': '<path d="M4 17v-4a4 4 0 0 1 4-4h4l3-3"/><path d="M12 9a5 5 0 0 1 5 5v3"/><path d="M4 17h13"/>',
   'type:stretch': '<circle cx="12" cy="5" r="2"/><path d="M12 7v6M12 13l-4 6M12 13l4 6M6 9l6 2 6-2"/>',
   'type:mobility': '<path d="M12 4a8 8 0 1 1-8 8"/><path d="M4 8v4h4"/><circle cx="12" cy="12" r="2"/>',
   'type:cardio': '<path d="M3 13h4l2-5 3 10 2-6 2 3h5"/>',
 
   // What a block is for
   'purpose:warmup': '<path d="M12 3c2 3 .5 4.5 0 6-2-1-3 1-3 3a4 4 0 0 0 8 0c0-3-2-6-5-9z"/><path d="M6 20h12"/>',
-  'purpose:main': '<path d="M4 9v6M7 7v10M17 7v10M20 9v6M7 12h10"/>',
+  'purpose:main': '<path d="M2 12h20"/><path d="M5 8.5v7M7.5 7v10M16.5 7v10M19 8.5v7"/>',
   'purpose:accessory': '<circle cx="12" cy="12" r="3"/><path d="M12 4v3M12 17v3M4 12h3M17 12h3M6.5 6.5l2 2M15.5 15.5l2 2M17.5 6.5l-2 2M8.5 15.5l-2 2"/>',
   'purpose:finisher': '<path d="M5 20V4l7 3 7-3v10l-7 3-7-3"/>',
   'purpose:cooldown': '<path d="M12 3v18M4.5 7.5l15 9M19.5 7.5l-15 9"/><path d="M12 7l-2.5-2M12 7l2.5-2M12 17l-2.5 2M12 17l2.5 2"/>',
 
   // The variation dimensions
-  'dim:equipment': '<path d="M4 9v6M7 7.5v9M17 7.5v9M20 9v6M7 12h10"/>',
+  'dim:equipment': '<circle cx="7" cy="12" r="3.6"/><circle cx="17" cy="12" r="3.6"/><path d="M10.6 12h2.8"/>',
   'dim:bench_angle': '<path d="M3 19h18"/><path d="M4 17l12-8"/><path d="M16 9v8"/><path d="M4 14v3"/>',
   'dim:position': '<circle cx="8" cy="6" r="2"/><path d="M8 8v5l-3 6M8 13l4 2 6-2M18 11v10"/>',
   'dim:grip': '<path d="M7 11V6.5a1.5 1.5 0 0 1 3 0V11M10 10.5V5a1.5 1.5 0 0 1 3 0v5.5M13 11V7a1.5 1.5 0 0 1 3 0v7a6 6 0 0 1-6 6 6 6 0 0 1-6-6v-2a1.5 1.5 0 0 1 3 0"/>',
@@ -61,6 +63,11 @@ export const UI_ICONS = {
   'ui:sparkle': '<path d="M12 3l1.8 4.2L18 9l-4.2 1.8L12 15l-1.8-4.2L6 9l4.2-1.8z"/><path d="M18 15l.9 2.1L21 18l-2.1.9L18 21l-.9-2.1L15 18l2.1-.9z"/>',
   'ui:sets': '<path d="M4 7h16M4 12h16M4 17h16"/><circle cx="7" cy="7" r="1.3"/><circle cx="12" cy="12" r="1.3"/><circle cx="17" cy="17" r="1.3"/>',
   'ui:rest': '<circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/>',
+  // Adding and reordering: clicking + is the ordinary way in, dragging is the shortcut.
+  'ui:plus': '<path d="M12 5v14M5 12h14"/>',
+  'ui:up': '<path d="M12 19V5M6 11l6-6 6 6"/>',
+  'ui:down': '<path d="M12 5v14M6 13l6 6 6-6"/>',
+  'ui:or': '<path d="M7 8h10M7 16h10"/><path d="M4 12h2M18 12h2"/>',
 };
 
 export const uiShapes = key => UI_ICONS[key] || '';

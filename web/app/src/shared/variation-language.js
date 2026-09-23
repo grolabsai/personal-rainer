@@ -1,8 +1,11 @@
 // Which colour family each way of varying an exercise belongs to. One definition for both apps;
 // the colours themselves live in variation-language.css.
+// Body position and angle are one fact, not two: the posture, and how far it is tilted. They share
+// a colour and sit on one row, so "Lying · Incline" reads as a single thing. What you are tilted
+// on — a bench, a box, nothing — is equipment's job to say, not the angle's.
 export const FAMILY = {
   equipment: 'equipment',
-  bench_angle: 'angle',
+  bench_angle: 'position',
   position: 'position',
   grip: 'grip',
   grip_width: 'grip-width',
@@ -13,7 +16,7 @@ export const FAMILY = {
 export const familyOf = dimensionId => FAMILY[dimensionId] || 'style';
 
 // The order a name reads in, matching the generated names in the catalog.
-export const DIMENSION_ORDER = ['bench_angle', 'position', 'grip', 'grip_width', 'laterality', 'stance', 'style'];
+export const DIMENSION_ORDER = ['position', 'bench_angle', 'grip', 'grip_width', 'laterality', 'stance', 'style'];
 export const dimensionRank = id => {
   const i = DIMENSION_ORDER.indexOf(id);
   return i === -1 ? DIMENSION_ORDER.length : i;
