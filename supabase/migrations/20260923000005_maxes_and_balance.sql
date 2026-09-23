@@ -80,3 +80,30 @@ join public.variant_muscles_resolved r
   on r.variant_id = coalesce(s.variant_id, i.variant_id, d.variant_id) and not r.redundant
 where b.purpose <> 'cooldown'
 group by 1, 2, 3, 4;
+
+-- Tightened straight after the advisor flagged it: both functions are SECURITY DEFINER, so they
+-- must check the caller themselves. Without this, a signed-in stranger could read what an athlete
+-- lifts by guessing a uuid.
+create or replace function public.one_rm_for(p_athlete uuid, p_exercise text) returns numeric
+language sql stable security definer set search_path = '' as $$
+  select case when p_athlete = auth.uid() or public.is_coach_of(p_athlete) then coalesce(
+    (select one_rm_kg from public.athlete_maxes
+     where athlete_id = p_athlete and exercise_id = p_exercise
+     order by measured_on desc limit 1),
+    (select estimated_1rm_kg from public.athlete_exercise_maxes
+     where athlete_id = p_athlete and exercise_id = p_exercise)) end;
+$$;
+
+create or replace function public.prescribed_load_kg(p_set uuid, p_athlete uuid) returns numeric
+language sql stable security definer set search_path = '' as $$
+  select case
+    when s.load_kg is not null then s.load_kg
+    when s.load_percent_1rm is not null then
+      round(public.one_rm_for(p_athlete, i.exercise_id) * s.load_percent_1rm / 100.0, 1)
+  end
+  from public.item_sets s
+  join public.program_workout_items i on i.id = s.item_id
+  where s.id = p_set
+    and (p_athlete = auth.uid() or public.is_coach_of(p_athlete))
+    and (public.can_see_workout(i.workout_id));
+$$;
