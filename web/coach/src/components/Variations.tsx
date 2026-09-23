@@ -17,6 +17,8 @@ import { Loading } from './Status';
 // Body position and angle share a row and a colour: one fact, two parts.
 const POSTURE = ['position', 'bench_angle'];
 
+type Pill = { key: string; icon: string; label: string; on: boolean; explicit: boolean; choose: () => void };
+
 function bestMatch(variants: VariantCard[]) {
   return [...variants].sort((a, b) =>
     a.attributes.length - b.attributes.length
@@ -105,10 +107,15 @@ export function Variations({ item, exercise, dimensions, values, equipment, relo
   const kitCounts = new Map<string, number>();
   for (const v of above('equipment')) for (const e of v.equipment) kitCounts.set(e.equipment_id, (kitCounts.get(e.equipment_id) || 0) + 1);
   const kitOptions = [...kitCounts.entries()].sort((a, b) => b[1] - a[1]).map(([id]) => id);
-  // Which of the typical variation's kit is *the* equipment: the implement, not the furniture. The
-  // catalog's own order answers it — a bench press is a barbell exercise that also needs a bench.
+  // The variation the item is right now — the one in the picture above. Every pill lights from
+  // this rather than from what has been insisted on, so the row always describes the exercise on
+  // screen instead of describing the requirements that led to it.
+  const current = data!.variants.find(v => v.id === item.variant_id) ?? typical;
+  const currentValue = (d: string) => current?.attributes.find(a => a.dimension_id === d)?.value ?? '';
+  // Which of its kit is *the* equipment: the implement, not the furniture. The catalog's own order
+  // answers it — a bench press is a barbell exercise that also needs a bench.
   const rank = (id: string) => equipment.find(e => e.id === id)?.sort_order ?? 999;
-  const defaultKit = [...(typical?.equipment ?? [])]
+  const defaultKit = [...(current?.equipment ?? [])]
     .sort((a, b) => rank(a.equipment_id) - rank(b.equipment_id))[0]?.equipment_id ?? kitOptions[0];
 
   const applicable = dimensions
@@ -119,7 +126,8 @@ export function Variations({ item, exercise, dimensions, values, equipment, relo
       // Saying nothing is itself one of the answers: most jump squats state no position and one
       // says "kneeling", so there are two ways to do it even though only one value is listed.
       const stated = pool.filter(v => v.attributes.some(a => a.dimension_id === d.id)).length;
-      return { d, vals, onTypical, choices: vals.length + (stated < pool.length ? 1 : 0) };
+      const plain = stated < pool.length;
+      return { d, vals, onTypical, plain, choices: vals.length + (plain ? 1 : 0) };
     })
     // A row is worth its height only if there is a choice in it. One way is not a choice: a jump
     // rope has no grip to pick and a chin-up has one body position, so those rows are simply absent
@@ -177,18 +185,23 @@ export function Variations({ item, exercise, dimensions, values, equipment, relo
     reload();
   };
 
-  // One row of pills per way of varying this exercise. The pill that is on is the value the item
-  // actually has; when nothing has been insisted on it is the typical one, marked as the default.
   // One dimension's pills. The row is coloured by the family the dimension belongs to, so the pill
   // you press is the same colour as the word it puts into the name.
-  const pills = ({ d, vals, onTypical }: typeof applicable[number]) => vals.map(v => ({
-    key: `${d.id}:${v}`, icon: `dim:${d.id}`, label: valueName(d.id, v),
-    on: chosenAttr[d.id] ? chosenAttr[d.id] === v : !Object.keys(chosenAttr).includes(d.id) && onTypical === v,
-    explicit: chosenAttr[d.id] === v,
-    choose: () => pickValue(d.id, v),
+  //
+  // The catalog names only the departures: a single-leg squat says "single leg" and an ordinary one
+  // says nothing at all. Left as it was, the row offered "Single leg" and no way back — one pill,
+  // reading as a fact rather than a choice. Saying nothing is the other option, so it gets a pill
+  // of its own, named for what it means: both legs, a standard grip, no named technique.
+  const pills = ({ d, vals, plain }: typeof applicable[number]): Pill[] => [
+    ...(plain ? [{ value: '', label: t(`plain_${d.id}` as 'plain_laterality') }] : []),
+    ...vals.map(v => ({ value: v, label: valueName(d.id, v) })),
+  ].map(o => ({
+    key: `${d.id}:${o.value}`, icon: `dim:${d.id}`, label: o.label,
+    on: currentValue(d.id) === o.value,
+    explicit: (chosenAttr[d.id] ?? '') === o.value && o.value !== '',
+    choose: () => pickValue(d.id, o.value),
   }));
 
-  type Pill = { key: string; icon: string; label: string; on: boolean; explicit: boolean; choose: () => void };
   const pillRow = (key: string, family: string, icon: string, label: string, opts: Pill[]) => (
     <div className={`varrow f-${family}`} key={key}>
       <span className="varlabel"><Icon name={icon} />{label}</span>
@@ -213,7 +226,7 @@ export function Variations({ item, exercise, dimensions, values, equipment, relo
       {kitOptions.length > 1 && pillRow('equipment', 'equipment', 'dim:equipment', t('equipment'),
         kitOptions.map(id => ({
           key: id, icon: id, label: nm(equipment.find(e => e.id === id)?.names) || id,
-          on: chosenKit ? chosenKit === id : defaultKit === id, explicit: chosenKit === id,
+          on: defaultKit === id, explicit: chosenKit === id,
           choose: () => pickKit(id),
         })))}
       {groups.map(dimensionRow)}

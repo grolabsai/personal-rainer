@@ -81,6 +81,10 @@ const en = {
   open_b: (n: number) => `${n} variations fit. Pick one to insist on it.`,
   more_variations: (n: number) => `…and ${n} more`,
   add_to_block: 'Add to the block being built',
+  // The catalog names only the departures, so "says nothing" needs a name of its own per row.
+  plain_position: 'Standard', plain_bench_angle: 'No bench', plain_grip: 'Standard',
+  plain_grip_width: 'Standard', plain_laterality: 'Both', plain_stance: 'Standard',
+  plain_style: 'Plain',
   unlock: 'Let the place decide again', locked_short: 'Locked', current: 'This one',
   // Workouts library and day slots
   workouts_lib: 'Workouts', workouts_lib_b: 'Workouts you build on their own, to drag into a programme’s days.',
@@ -176,6 +180,9 @@ const es: Partial<Dict> = {
   open_b: (n: number) => `${n} variaciones encajan. Elige una para exigirla.`,
   more_variations: (n: number) => `…y ${n} más`,
   add_to_block: 'Añadir al bloque en curso',
+  plain_position: 'Estándar', plain_bench_angle: 'Sin banco', plain_grip: 'Estándar',
+  plain_grip_width: 'Estándar', plain_laterality: 'Ambos', plain_stance: 'Estándar',
+  plain_style: 'Sin técnica',
   unlock: 'Que vuelva a decidir el lugar', locked_short: 'Fijada', current: 'Esta',
   workouts_lib: 'Entrenamientos', workouts_lib_b: 'Entrenamientos sueltos, para arrastrarlos a los días de un programa.',
   new_workout_lib: 'Nuevo entrenamiento', programs: 'Programas',
